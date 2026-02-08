@@ -9,11 +9,13 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "update-types": "supabase gen types typescript --project-id \"xsjaqtjvekvumfredaiz\" --schema public > packages/utils/src/database.types.ts"
   },
   "devDependencies": {
     "turbo": "latest",
-    "prettier": "latest"
+    "prettier": "latest",
+    "supabase": "^1.145.4"
   },
   "packageManager": "npm@10.0.0"
 }
