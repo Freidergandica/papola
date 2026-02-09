@@ -57,8 +57,7 @@ export default function HomeScreen() {
             <StoreCard 
               store={item} 
               onPress={() => {
-                // TODO: Navigate to store details
-                console.log('Selected store:', item.name);
+                router.push(`/store/${item.id}`);
               }} 
             />
           )}

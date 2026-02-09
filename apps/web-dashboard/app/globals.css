@@ -10,6 +10,26 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Papola Brand Colors */
+  --color-papola-blue: #1F29DE;
+  --color-papola-blue-80: #4C54E5;
+  --color-papola-blue-60: #797FEC;
+  --color-papola-blue-40: #A5A9F2;
+  --color-papola-blue-20: #D2D4F8;
+  
+  --color-papola-green: #63c132;
+  --color-papola-green-80: #82CD5B;
+  --color-papola-green-60: #A1DA84;
+  --color-papola-green-40: #C1E6AD;
+  --color-papola-green-20: #E0F3D6;
+
+  /* Tertiary Colors */
+  --color-papola-lilac: #A6B1EE;
+  --color-papola-pink: #EDA0B2;
+  --color-papola-mint: #B8DEC5;
+  --color-papola-beige: #E3CDA4;
+  --color-papola-peach: #FCD8BE;
 }
 
 @media (prefers-color-scheme: dark) {

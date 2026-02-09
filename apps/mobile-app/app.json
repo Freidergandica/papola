@@ -26,8 +26,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "scheme": "papola",
     "plugins": [
-      "expo-router"
+      ["expo-router", { "root": "./app" }]
     ]
   }
 }

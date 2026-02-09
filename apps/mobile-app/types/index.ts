@@ -29,3 +29,7 @@ export interface Product {
   category?: string;
   is_available: boolean;
 }
+
+export interface CartItem extends Product {
+  quantity: number;
+}
