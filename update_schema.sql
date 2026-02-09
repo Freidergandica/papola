@@ -38,6 +38,12 @@ CREATE POLICY "Store Owners can update own store"
 ON public.stores FOR UPDATE 
 USING (auth.uid() = owner_id);
 
+-- Stores: Usuarios autenticados pueden crear su propia tienda
+DROP POLICY IF EXISTS "Users can create their own store" ON public.stores;
+CREATE POLICY "Users can create their own store" 
+ON public.stores FOR INSERT 
+WITH CHECK (auth.uid() = owner_id);
+
 -- Products: Todos pueden ver los productos
 CREATE POLICY "Public products are viewable by everyone" 
 ON public.products FOR SELECT 
@@ -51,3 +57,21 @@ USING (
     SELECT id FROM public.stores WHERE owner_id = auth.uid()
   )
 );
+
+-- 5. Configurar RLS para Profiles (necesario para el registro)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile" 
+ON public.profiles FOR SELECT 
+USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" 
+ON public.profiles FOR UPDATE 
+USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" 
+ON public.profiles FOR INSERT 
+WITH CHECK (auth.uid() = id);

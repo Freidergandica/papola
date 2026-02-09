@@ -57,7 +57,7 @@ export default function NewStorePage() {
             name="name" 
             id="name" 
             required
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             placeholder="Ej. Moda & Estilo, TechStore, Cafetería Central..."
           />
         </div>
@@ -68,7 +68,7 @@ export default function NewStorePage() {
             name="description" 
             id="description" 
             rows={3}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             placeholder="Breve descripción de los productos y servicios..."
           />
         </div>
@@ -80,7 +80,7 @@ export default function NewStorePage() {
             name="address" 
             id="address" 
             required
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             placeholder="Av. Principal 123, Local 4..."
           />
         </div>
@@ -91,7 +91,7 @@ export default function NewStorePage() {
             type="url" 
             name="image_url" 
             id="image_url" 
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             placeholder="https://..."
           />
         </div>
@@ -104,7 +104,7 @@ export default function NewStorePage() {
               name="delivery_min" 
               id="delivery_min" 
               defaultValue={20}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             />
           </div>
           <div>
@@ -114,7 +114,7 @@ export default function NewStorePage() {
               name="delivery_max" 
               id="delivery_max" 
               defaultValue={45}
-              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             />
           </div>
         </div>

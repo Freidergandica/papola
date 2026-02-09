@@ -73,7 +73,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
 
@@ -86,7 +86,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                   rows={3}
                   value={formData.description}
                   onChange={handleChange}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border border-gray-300 rounded-md py-2 px-3"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border border-gray-300 rounded-md py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 id="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
 
@@ -111,7 +111,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 id="image_url"
                 value={formData.image_url}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
                <p className="mt-2 text-xs text-gray-500">Recomendado: Imagen cuadrada (1:1)</p>
             </div>
@@ -142,7 +142,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 id="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 id="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
 
@@ -167,7 +167,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
                 value={formData.schedule}
                 onChange={handleChange}
                 placeholder="Ej. Lun-Vie: 9am - 6pm"
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3"
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
               />
             </div>
           </div>

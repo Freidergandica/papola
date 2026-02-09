@@ -165,7 +165,7 @@ export default function RegisterStorePage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3"
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="tu@email.com"
                     />
                   </div>
@@ -182,7 +182,7 @@ export default function RegisterStorePage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3"
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="••••••••"
                     />
                   </div>
@@ -199,20 +199,22 @@ export default function RegisterStorePage() {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3"
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="••••••••"
                     />
                   </div>
                 </div>
 
-                <button
-                  type="submit"
+                <div>
+                  <button
+                    type="submit"
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-papola-blue hover:bg-papola-blue-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-papola-blue transition-colors"
                 >
                   Siguiente
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </div>
+            </div>
             )}
 
             {step === 2 && (
@@ -232,7 +234,7 @@ export default function RegisterStorePage() {
                       required
                       value={storeName}
                       onChange={(e) => setStoreName(e.target.value)}
-                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3"
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="Ej. Moda & Estilo, TechStore, Cafetería Central..."
                     />
                   </div>
@@ -249,7 +251,7 @@ export default function RegisterStorePage() {
                       required
                       value={storeAddress}
                       onChange={(e) => setStoreAddress(e.target.value)}
-                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3"
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="Av. Siempre Viva 123"
                     />
                   </div>
@@ -261,7 +263,7 @@ export default function RegisterStorePage() {
                     rows={3}
                     value={storeDescription}
                     onChange={(e) => setStoreDescription(e.target.value)}
-                    className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg p-3"
+                    className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg p-3 text-gray-900 bg-white placeholder-gray-400"
                     placeholder="Vendemos ropa, accesorios, tecnología o comida con los mejores descuentos..."
                   />
                 </div>

@@ -97,7 +97,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border text-gray-900 bg-white placeholder-gray-400"
                 />
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border border-gray-300 rounded-md py-2 px-3"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border border-gray-300 rounded-md py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
                 />
               </div>
               <p className="mt-2 text-sm text-gray-500">Breve descripción del producto, ingredientes o características.</p>
@@ -137,7 +137,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   step="0.01"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md py-2 border"
+                  className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md py-2 border text-gray-900 bg-white placeholder-gray-400"
                   placeholder="0.00"
                 />
               </div>
@@ -158,7 +158,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   step="0.01"
                   value={originalPrice}
                   onChange={(e) => setOriginalPrice(e.target.value)}
-                  className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md py-2 border"
+                  className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md py-2 border text-gray-900 bg-white placeholder-gray-400"
                   placeholder="0.00"
                 />
               </div>
@@ -177,7 +177,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   id="stock"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border text-gray-900 bg-white placeholder-gray-400"
                 />
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   id="sku"
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border text-gray-900 bg-white placeholder-gray-400"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function ProductForm({ storeId }: { storeId: string }) {
                   id="category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                  className="shadow-sm focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border text-gray-900 bg-white placeholder-gray-400"
                   placeholder="Ej. Bebidas, Ropa, Electrónica"
                 />
               </div>
