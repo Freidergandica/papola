@@ -1,9 +1,10 @@
-import { View, Text, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Store } from '../../types';
 import { StoreCard } from '../../components/StoreCard';
+import { SkeletonStoreCard } from '../../components/SkeletonStoreCard';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
@@ -46,8 +47,10 @@ export default function HomeScreen() {
       </View>
       
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#9333ea" />
+        <View className="flex-1">
+          {[1, 2, 3].map((i) => (
+            <SkeletonStoreCard key={i} />
+          ))}
         </View>
       ) : (
         <FlatList
@@ -64,11 +67,11 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#9333ea" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1F29DE" />
           }
           ListEmptyComponent={
             <View className="mt-8 bg-white p-6 rounded-3xl items-center shadow-sm border border-gray-100">
-               <Text className="text-purple-800 font-bold text-lg">Próximamente</Text>
+               <Text className="text-papola-blue font-bold text-lg">Próximamente</Text>
                <Text className="text-gray-500 text-center mt-2">Aún no hay restaurantes disponibles en tu zona.</Text>
             </View>
           }

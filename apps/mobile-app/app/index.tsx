@@ -93,7 +93,7 @@ export default function LoginScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
         <View className="items-center mb-10">
-          <Text className="text-5xl font-bold text-purple-600 tracking-tighter">Papola</Text>
+          <Text className="text-5xl font-bold text-papola-blue tracking-tighter">Papola</Text>
           <Text className="text-gray-500 mt-2 text-lg">Tu comida, al instante</Text>
         </View>
 
@@ -103,13 +103,13 @@ export default function LoginScreen() {
             className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'email' ? 'bg-white shadow-sm' : ''}`}
             onPress={() => { setAuthMethod('email'); setWaitingForOtp(false); }}
           >
-            <Text className={`font-medium ${authMethod === 'email' ? 'text-purple-600' : 'text-gray-500'}`}>Correo</Text>
+            <Text className={`font-medium ${authMethod === 'email' ? 'text-papola-blue' : 'text-gray-500'}`}>Correo</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'phone' ? 'bg-white shadow-sm' : ''}`}
             onPress={() => setAuthMethod('phone')}
           >
-            <Text className={`font-medium ${authMethod === 'phone' ? 'text-purple-600' : 'text-gray-500'}`}>Teléfono</Text>
+            <Text className={`font-medium ${authMethod === 'phone' ? 'text-papola-blue' : 'text-gray-500'}`}>Teléfono</Text>
           </TouchableOpacity>
         </View>
 
@@ -138,7 +138,7 @@ export default function LoginScreen() {
                 />
               </View>
               <TouchableOpacity 
-                className="bg-purple-600 py-4 rounded-2xl items-center shadow-lg shadow-purple-200 mt-2 active:bg-purple-700"
+                className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-2 active:bg-papola-blue-80"
                 onPress={handleEmailAuth}
                 disabled={loading}
               >
@@ -158,7 +158,7 @@ export default function LoginScreen() {
                     keyboardType="phone-pad"
                   />
                   <TouchableOpacity 
-                    className="bg-purple-600 py-4 rounded-2xl items-center shadow-lg shadow-purple-200 mt-6 active:bg-purple-700"
+                    className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-6 active:bg-papola-blue-80"
                     onPress={handlePhoneLogin}
                     disabled={loading}
                   >
@@ -177,14 +177,14 @@ export default function LoginScreen() {
                     maxLength={6}
                   />
                   <TouchableOpacity 
-                    className="bg-purple-600 py-4 rounded-2xl items-center shadow-lg shadow-purple-200 mt-6 active:bg-purple-700"
+                    className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-6 active:bg-papola-blue-80"
                     onPress={handleVerifyOtp}
                     disabled={loading}
                   >
                     {loading ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">Verificar y Entrar</Text>}
                   </TouchableOpacity>
                   <TouchableOpacity className="items-center mt-4" onPress={() => setWaitingForOtp(false)}>
-                     <Text className="text-purple-600 font-medium">Cambiar número</Text>
+                     <Text className="text-papola-blue font-medium">Cambiar número</Text>
                   </TouchableOpacity>
                 </View>
               )}

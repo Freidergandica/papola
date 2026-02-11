@@ -1,12 +1,44 @@
-export default function OrdersPage() {
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Mis Pedidos</h1>
-      
-      <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
-        <p className="text-gray-500">No hay pedidos activos por el momento.</p>
-        <p className="text-sm text-gray-400 mt-2">Los nuevos pedidos aparecerán aquí.</p>
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import StoreOrdersList from './orders-list'
+
+export default async function StoreOrdersPage() {
+  const supabase = await createClient()
+
+  // Server-side: verify auth + store ownership
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'store_owner' && profile?.role !== 'admin') {
+    redirect('/login')
+  }
+
+  const { data: store } = await supabase
+    .from('stores')
+    .select('id, name')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!store) {
+    return (
+      <div className="py-12 text-center">
+        <p className="text-gray-500">Primero debes crear una tienda.</p>
       </div>
-    </div>
-  )
+    )
+  }
+
+  // Server-side: fetch initial orders (verified by ownership)
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('*, profiles!orders_customer_id_fkey(full_name, phone_number), order_items(*, products(name))')
+    .eq('store_id', store.id)
+    .order('created_at', { ascending: false })
+
+  return <StoreOrdersList initialOrders={orders || []} storeId={store.id} />
 }

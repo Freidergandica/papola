@@ -73,7 +73,7 @@ export default async function ProductsPage() {
                        <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">
-                        No img
+                        Sin imagen
                       </div>
                     )}
                   </div>

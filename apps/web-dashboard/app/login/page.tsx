@@ -33,29 +33,46 @@ export default function LoginPage() {
       if (!user) throw new Error('No se pudo obtener el usuario')
 
       // Verificar rol
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
       if (profileError) {
-        // Si no hay perfil, asumir error o redirigir a home por seguridad
-        console.error('Error fetching profile:', profileError)
-        // Fallback temporal si no existe perfil (ej: admin creado manualmente sin perfil)
-        // En producción esto debería ser estricto.
-        router.push('/admin/dashboard') 
-      } else {
-        if (profile.role === 'admin') {
-          router.push('/admin/dashboard')
-        } else if (profile.role === 'store_owner') {
-          router.push('/store/dashboard')
-        } else {
-          // Otros roles no tienen acceso al dashboard web por ahora
-          setError('No tienes permisos para acceder a este panel.')
-          await supabase.auth.signOut()
-          return
+        console.log('Perfil no encontrado, intentando crear uno nuevo...', profileError)
+        
+        // Intentar crear el perfil si no existe (Recuperación automática)
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: user.email,
+            role: user.user_metadata?.role || 'store_owner',
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0]
+          })
+          .select('role')
+          .single()
+
+        if (createError) {
+           console.error('Error fatal creando perfil:', createError)
+           setError('Error de integridad de cuenta. Por favor contacta soporte.')
+           await supabase.auth.signOut()
+           return
         }
+        
+        profile = newProfile
+      }
+
+      if (profile?.role === 'admin') {
+        router.push('/admin/dashboard')
+      } else if (profile?.role === 'store_owner') {
+        router.push('/store/dashboard')
+      } else {
+        // Otros roles no tienen acceso al dashboard web por ahora
+        setError('No tienes permisos para acceder a este panel.')
+        await supabase.auth.signOut()
+        return
       }
 
       router.refresh()

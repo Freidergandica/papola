@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Package, ShoppingBag, Store, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import CreateStoreForm from '@/components/store/create-store-form'
 
 export default async function StoreDashboard() {
   const supabase = await createClient()
@@ -17,9 +18,8 @@ export default async function StoreDashboard() {
 
   if (!store) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">Bienvenido a Papola</h2>
-        <p className="mt-2 text-gray-500">Tu cuenta ha sido creada. Un administrador debe aprobar tu tienda antes de comenzar.</p>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center">
+        <CreateStoreForm userId={user.id} userEmail={user.email || ''} />
       </div>
     )
   }

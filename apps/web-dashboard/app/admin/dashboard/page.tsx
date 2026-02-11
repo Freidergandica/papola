@@ -1,9 +1,20 @@
-
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { DollarSign, ShoppingBag, Users, Store } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') redirect('/login')
 
   // KPIs Queries
   // 1. Total Ventas (Sum of total_amount from orders)
@@ -31,7 +42,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard General</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Panel General</h1>
       
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

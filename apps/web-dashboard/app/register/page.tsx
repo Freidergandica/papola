@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Store, User, Lock, MapPin, ArrowRight } from 'lucide-react'
+import { Loader2, Store, User, Lock, MapPin, ArrowRight, FileText, Phone } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -17,6 +17,8 @@ export default function RegisterStorePage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [storeName, setStoreName] = useState('')
+  const [storeRif, setStoreRif] = useState('')
+  const [storePhone, setStorePhone] = useState('')
   const [storeAddress, setStoreAddress] = useState('')
   const [storeDescription, setStoreDescription] = useState('')
 
@@ -57,6 +59,13 @@ export default function RegisterStorePage() {
       if (authError) throw authError
       if (!authData.user) throw new Error('No se pudo crear el usuario')
 
+      // Verificar si se requiere confirmación de correo (sesión es null)
+      if (!authData.session) {
+        alert('Registro exitoso. Por favor revisa tu correo para confirmar tu cuenta. Una vez confirmado, podrás iniciar sesión y completar el registro de tu tienda.')
+        router.push('/login')
+        return
+      }
+
       const userId = authData.user.id
 
       // 2. Crear Perfil (Store Owner)
@@ -85,6 +94,8 @@ export default function RegisterStorePage() {
         .insert({
           owner_id: userId,
           name: storeName,
+          rif: storeRif,
+          phone: storePhone,
           description: storeDescription,
           address: storeAddress,
           is_active: false, // Inactivo por defecto, requiere aprobación
@@ -236,6 +247,40 @@ export default function RegisterStorePage() {
                       onChange={(e) => setStoreName(e.target.value)}
                       className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
                       placeholder="Ej. Moda & Estilo, TechStore, Cafetería Central..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">RIF de la Empresa</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={storeRif}
+                      onChange={(e) => setStoreRif(e.target.value)}
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
+                      placeholder="J-12345678-9"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      value={storePhone}
+                      onChange={(e) => setStorePhone(e.target.value)}
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white placeholder-gray-400"
+                      placeholder="+58 412 1234567"
                     />
                   </div>
                 </div>

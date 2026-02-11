@@ -5,11 +5,10 @@ import { router } from 'expo-router';
 import { useCart } from '../context/CartContext';
 
 export default function CartScreen() {
-  const { items, removeItem, updateQuantity, total, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, total, clearCart, discountAmount, appliedDeal } = useCart();
 
   const handleCheckout = () => {
-    // TODO: Implement Checkout
-    console.log('Proceed to Checkout');
+    router.push('/checkout');
   };
 
   return (
@@ -32,7 +31,7 @@ export default function CartScreen() {
            <Text className="text-xl font-bold text-gray-900 text-center">Tu carrito está vacío</Text>
            <Text className="text-gray-500 text-center mt-2">¡Agrega algunos platos deliciosos para comenzar!</Text>
            <TouchableOpacity 
-             className="mt-8 bg-purple-600 px-8 py-3 rounded-full"
+             className="mt-8 bg-papola-blue px-8 py-3 rounded-full"
              onPress={() => router.back()}
            >
              <Text className="text-white font-bold">Explorar Restaurantes</Text>
@@ -54,7 +53,7 @@ export default function CartScreen() {
                 )}
                 <View className="flex-1">
                   <Text className="text-base font-bold text-gray-900">{item.name}</Text>
-                  <Text className="text-purple-600 font-bold mt-1">${(item.price * item.quantity).toFixed(2)}</Text>
+                  <Text className="text-papola-blue font-bold mt-1">${(item.price * item.quantity).toFixed(2)}</Text>
                 </View>
                 
                 <View className="flex-row items-center bg-gray-100 rounded-lg">
@@ -81,18 +80,26 @@ export default function CartScreen() {
                <Text className="text-gray-500">Subtotal</Text>
                <Text className="text-gray-900 font-bold">${total.toFixed(2)}</Text>
             </View>
+            {discountAmount > 0 && (
+              <View className="flex-row justify-between mb-2">
+                <Text className="text-green-600">Descuento{appliedDeal ? ` (${appliedDeal.title})` : ''}</Text>
+                <Text className="text-green-600 font-bold">-${discountAmount.toFixed(2)}</Text>
+              </View>
+            )}
             <View className="flex-row justify-between mb-6">
                <Text className="text-gray-500">Envío</Text>
                <Text className="text-green-600 font-bold">Gratis</Text>
             </View>
-            
+
             <View className="flex-row justify-between mb-6 pt-4 border-t border-gray-100">
                <Text className="text-xl font-bold text-gray-900">Total</Text>
-               <Text className="text-2xl font-bold text-purple-600">${total.toFixed(2)}</Text>
+               <Text className="text-2xl font-bold text-papola-blue">
+                 ${Math.max(0, total - discountAmount).toFixed(2)}
+               </Text>
             </View>
 
-            <TouchableOpacity 
-              className="bg-purple-600 py-4 rounded-2xl items-center shadow-lg shadow-purple-200"
+            <TouchableOpacity
+              className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20"
               onPress={handleCheckout}
             >
               <Text className="text-white font-bold text-lg">Realizar Pedido</Text>

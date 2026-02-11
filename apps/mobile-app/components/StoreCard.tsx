@@ -22,8 +22,8 @@ export function StoreCard({ store, onPress }: StoreCardProps) {
             resizeMode="cover"
           />
         ) : (
-          <View className="w-full h-full items-center justify-center bg-purple-100">
-            <Ionicons name="restaurant" size={40} color="#9333ea" />
+          <View className="w-full h-full items-center justify-center bg-papola-blue-20">
+            <Ionicons name="restaurant" size={40} color="#1F29DE" />
           </View>
         )}
       </View>
@@ -33,7 +33,7 @@ export function StoreCard({ store, onPress }: StoreCardProps) {
           <Text className="text-lg font-bold text-gray-900 flex-1 mr-2">{store.name}</Text>
           <View className="flex-row items-center bg-green-50 px-2 py-1 rounded-lg">
             <Ionicons name="star" size={12} color="#16a34a" />
-            <Text className="text-green-700 text-xs font-bold ml-1">{store.rating || 'New'}</Text>
+            <Text className="text-green-700 text-xs font-bold ml-1">{store.rating || 'Nuevo'}</Text>
           </View>
         </View>
         

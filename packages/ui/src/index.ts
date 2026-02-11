@@ -1,3 +1,3 @@
-export const Button = () => {
-  console.log("Button component");
-};
+export { Button, type ButtonProps } from './button';
+export { Input, type InputProps } from './input';
+export { Card, type CardProps } from './card';

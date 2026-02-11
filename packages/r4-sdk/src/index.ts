@@ -1,3 +1,2 @@
-export const connectToBank = () => {
-  console.log("Connecting to R4 API...");
-};
+export { R4Client } from './client';
+export type { R4Config, BankAccount, PaymentRequest, PaymentResponse, R4Error } from './types';

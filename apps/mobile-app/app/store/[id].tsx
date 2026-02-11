@@ -4,14 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
-import { Store, Product } from '../../types';
+import { Store, Product, Deal } from '../../types';
 import { useCart } from '../../context/CartContext';
+import { DealCard } from '../../components/DealCard';
 
 export default function StoreDetailsScreen() {
   const { id } = useLocalSearchParams();
   const [store, setStore] = useState<Store | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addedProductId, setAddedProductId] = useState<string | null>(null);
   
   const { addItem, items, total } = useCart();
 
@@ -43,6 +46,19 @@ export default function StoreDetailsScreen() {
       if (productsError) throw productsError;
       setProducts(productsData || []);
 
+      // 3. Fetch active deals for this store
+      const now = new Date().toISOString();
+      const { data: dealsData } = await supabase
+        .from('deals')
+        .select('*')
+        .eq('store_id', id)
+        .eq('is_active', true)
+        .eq('is_approved', true)
+        .or(`ends_at.is.null,ends_at.gt.${now}`)
+        .order('is_featured', { ascending: false });
+
+      setDeals(dealsData || []);
+
     } catch (error) {
       console.error('Error fetching store details:', error);
     } finally {
@@ -52,13 +68,15 @@ export default function StoreDetailsScreen() {
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
-    // Optional: Feedback (Toast or just updating the UI)
+    // Optimistic visual feedback
+    setAddedProductId(product.id);
+    setTimeout(() => setAddedProductId(null), 800);
   };
 
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#9333ea" />
+        <ActivityIndicator size="large" color="#1F29DE" />
       </View>
     );
   }
@@ -68,7 +86,7 @@ export default function StoreDetailsScreen() {
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
         <Text className="text-gray-500">Restaurante no encontrado.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
-          <Text className="text-purple-600 font-bold">Volver</Text>
+          <Text className="text-papola-blue font-bold">Volver</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -111,16 +129,26 @@ export default function StoreDetailsScreen() {
 
           <View className="flex-row items-center space-x-6 mb-8 border-b border-gray-100 pb-6">
             <View className="flex-row items-center">
-              <Ionicons name="time-outline" size={20} color="#9333ea" />
+              <Ionicons name="time-outline" size={20} color="#1F29DE" />
               <Text className="text-gray-700 ml-2 font-medium">
                 {store.delivery_time_min}-{store.delivery_time_max} min
               </Text>
             </View>
             <View className="flex-row items-center ml-6">
-              <Ionicons name="bicycle-outline" size={20} color="#9333ea" />
+              <Ionicons name="bicycle-outline" size={20} color="#1F29DE" />
               <Text className="text-gray-700 ml-2 font-medium">Envío Gratis</Text>
             </View>
           </View>
+
+          {/* Active Deals */}
+          {deals.length > 0 && (
+            <View className="mb-6">
+              <Text className="text-xl font-bold text-gray-900 mb-3">Ofertas</Text>
+              {deals.map((deal) => (
+                <DealCard key={deal.id} deal={deal} />
+              ))}
+            </View>
+          )}
 
           <Text className="text-xl font-bold text-gray-900 mb-4">Menú</Text>
           
@@ -136,16 +164,21 @@ export default function StoreDetailsScreen() {
                 <Text className="text-gray-500 text-sm mb-2" numberOfLines={2}>
                   {product.description}
                 </Text>
-                <Text className="text-purple-700 font-bold">${product.price.toFixed(2)}</Text>
+                <Text className="text-papola-blue-80 font-bold">${product.price.toFixed(2)}</Text>
+                {addedProductId === product.id && (
+                  <Text className="text-green-600 text-xs font-bold mt-1">Agregado al carrito</Text>
+                )}
               </View>
               {product.image_url && (
                 <View className="relative">
-                   <Image 
-                    source={{ uri: product.image_url }} 
+                   <Image
+                    source={{ uri: product.image_url }}
                     className="w-24 h-24 rounded-xl bg-gray-100"
                   />
-                  <View className="absolute bottom-0 right-0 bg-purple-600 rounded-full w-8 h-8 items-center justify-center shadow-sm">
-                    <Ionicons name="add" size={20} color="white" />
+                  <View className={`absolute bottom-0 right-0 rounded-full w-8 h-8 items-center justify-center shadow-sm ${
+                    addedProductId === product.id ? 'bg-green-500' : 'bg-papola-blue'
+                  }`}>
+                    <Ionicons name={addedProductId === product.id ? 'checkmark' : 'add'} size={20} color="white" />
                   </View>
                 </View>
               )}
@@ -159,11 +192,11 @@ export default function StoreDetailsScreen() {
         {cartItemCount > 0 && (
           <View className="absolute bottom-8 left-0 right-0 px-6">
             <TouchableOpacity 
-              className="bg-purple-600 py-4 rounded-2xl flex-row items-center justify-between px-6 shadow-xl shadow-purple-200"
+              className="bg-papola-blue py-4 rounded-2xl flex-row items-center justify-between px-6 shadow-xl shadow-papola-blue-20"
               onPress={() => router.push('/cart')}
             >
               <View className="flex-row items-center">
-                <View className="bg-purple-800 rounded-full w-8 h-8 items-center justify-center mr-3">
+                <View className="bg-papola-blue-80 rounded-full w-8 h-8 items-center justify-center mr-3">
                    <Text className="text-white font-bold text-xs">{cartItemCount}</Text>
                 </View>
                 <Text className="text-white font-bold text-lg">Ver Carrito</Text>

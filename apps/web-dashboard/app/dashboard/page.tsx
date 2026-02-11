@@ -82,7 +82,7 @@ export default async function DashboardPage() {
               <thead>
                 <tr className="text-left border-b border-gray-100">
                   <th className="pb-3 text-sm font-semibold text-gray-500">Comercio</th>
-                  <th className="pb-3 text-sm font-semibold text-gray-500">Rating</th>
+                  <th className="pb-3 text-sm font-semibold text-gray-500">Calificacion</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500">Estado</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500 text-right">Ventas</th>
                 </tr>

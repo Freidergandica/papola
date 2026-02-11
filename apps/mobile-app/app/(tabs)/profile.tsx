@@ -11,7 +11,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white px-4">
        <View className="items-center mt-10">
-          <View className="w-24 h-24 bg-purple-100 rounded-full items-center justify-center mb-4">
+          <View className="w-24 h-24 bg-papola-blue-20 rounded-full items-center justify-center mb-4">
             <Text className="text-3xl">👤</Text>
           </View>
           <Text className="text-xl font-bold text-gray-900">Usuario Demo</Text>
