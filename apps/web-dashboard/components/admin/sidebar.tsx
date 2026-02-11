@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Store, Users, Settings, Tag } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, Tag, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -10,6 +10,7 @@ const navigation = [
   { name: 'Panel', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Tiendas', href: '/admin/stores', icon: Store },
   { name: 'Ofertas', href: '/admin/deals', icon: Tag },
+  { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
   { name: 'Usuarios', href: '/admin/users', icon: Users },
   { name: 'Configuración', href: '/admin/settings', icon: Settings },
 ]
