@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-app",
-    "slug": "mobile-app",
+    "name": "Papola",
+    "slug": "papola",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,25 +10,41 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1F29DE"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.papolaapp.mobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1F29DE"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.papolaapp.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "scheme": "papola",
     "plugins": [
-      ["expo-router", { "root": "./app" }]
-    ]
+      [
+        "expo-router",
+        {
+          "root": "./app"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c82feb1d-02bf-4aff-9f38-2f7658f96668"
+      },
+      "router": {
+        "root": "./app"
+      }
+    },
+    "owner": "freidergandica"
   }
 }
