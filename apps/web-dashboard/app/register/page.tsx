@@ -45,13 +45,19 @@ export default function RegisterStorePage() {
     setError(null)
 
     try {
-      // 1. Crear Usuario
+      // 1. Crear Usuario con metadata completa de la tienda
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            role: 'store_owner' // Metadata inicial
+            role: 'store_owner',
+            pending_store: true,
+            store_name: storeName,
+            store_rif: storeRif,
+            store_phone: storePhone,
+            store_address: storeAddress,
+            store_description: storeDescription,
           }
         }
       })
@@ -61,7 +67,7 @@ export default function RegisterStorePage() {
 
       // Verificar si se requiere confirmación de correo (sesión es null)
       if (!authData.session) {
-        alert('Registro exitoso. Por favor revisa tu correo para confirmar tu cuenta. Una vez confirmado, podrás iniciar sesión y completar el registro de tu tienda.')
+        alert('Registro exitoso. Por favor revisa tu correo para confirmar tu cuenta. Al iniciar sesión, tu tienda se creará automáticamente.')
         router.push('/login')
         return
       }

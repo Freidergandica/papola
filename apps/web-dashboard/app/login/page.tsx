@@ -41,15 +41,14 @@ export default function LoginPage() {
 
       if (profileError) {
         console.log('Perfil no encontrado, intentando crear uno nuevo...', profileError)
-        
-        // Intentar crear el perfil si no existe (Recuperación automática)
+
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .upsert({
             id: user.id,
             email: user.email,
             role: user.user_metadata?.role || 'store_owner',
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0]
+            full_name: user.user_metadata?.store_name || user.user_metadata?.full_name || user.email?.split('@')[0]
           })
           .select('role')
           .single()
@@ -60,8 +59,52 @@ export default function LoginPage() {
            await supabase.auth.signOut()
            return
         }
-        
+
         profile = newProfile
+      }
+
+      // Completar registro pendiente: si tiene metadata de tienda pero no tiene tienda en DB
+      const metadata = user.user_metadata
+      if (metadata?.pending_store && metadata?.store_name) {
+        const { data: existingStore } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('owner_id', user.id)
+          .single()
+
+        if (!existingStore) {
+          // Actualizar rol a store_owner si no lo es
+          if (profile?.role !== 'store_owner' && profile?.role !== 'admin') {
+            await supabase
+              .from('profiles')
+              .update({ role: 'store_owner' })
+              .eq('id', user.id)
+            profile = { role: 'store_owner' }
+          }
+
+          // Crear la tienda con los datos guardados en metadata
+          const { error: storeError } = await supabase
+            .from('stores')
+            .insert({
+              owner_id: user.id,
+              name: metadata.store_name,
+              rif: metadata.store_rif || '',
+              phone: metadata.store_phone || '',
+              description: metadata.store_description || '',
+              address: metadata.store_address || '',
+              is_active: false,
+              rating: 5.0,
+            })
+
+          if (storeError) {
+            console.error('Error creando tienda pendiente:', storeError)
+          } else {
+            // Limpiar metadata de registro pendiente
+            await supabase.auth.updateUser({
+              data: { pending_store: false }
+            })
+          }
+        }
       }
 
       if (profile?.role === 'admin') {
