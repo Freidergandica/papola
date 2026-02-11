@@ -1,8 +1,10 @@
--- Actualizar rol de superadmin
--- IMPORTANTE: Reemplaza 'tu-email-admin@ejemplo.com' por el correo real de tu superadmin
+-- Asignar rol de administrador a la cuenta principal
 UPDATE public.profiles
 SET role = 'admin'
-WHERE email = 'tu-email-admin@ejemplo.com';
+WHERE email = 'freidergandica@gmail.com';
 
 -- Verificar el cambio
-SELECT * FROM public.profiles WHERE role = 'admin';
+SELECT id, email, role, full_name FROM public.profiles WHERE email IN (
+  'freidergandica@gmail.com',
+  'freidergandica@juntossepuede.co'
+);
