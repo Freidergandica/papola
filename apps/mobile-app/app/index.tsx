@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { FontAwesome } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { shadowStyles } from '../styles/shadows';
 
 export default function LoginScreen() {
@@ -27,7 +28,22 @@ export default function LoginScreen() {
   const formOpacity = useRef(new RNAnimated.Value(0)).current;
   const formTranslateY = useRef(new RNAnimated.Value(60)).current;
 
+  // Check if onboarding has been completed
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+
   useEffect(() => {
+    AsyncStorage.getItem('@papola/onboarding_completed').then((value) => {
+      if (!value) {
+        router.replace('/onboarding');
+      } else {
+        setOnboardingChecked(true);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!onboardingChecked) return;
+
     // 1. Logo fades in + scale with spring bounce
     RNAnimated.parallel([
       RNAnimated.timing(logoOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
@@ -63,7 +79,7 @@ export default function LoginScreen() {
         setSplashDone(true);
       });
     }, 2000);
-  }, []);
+  }, [onboardingChecked]);
 
   // Email/Password Auth
   const handleEmailAuth = async () => {

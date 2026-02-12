@@ -7,6 +7,7 @@ export default function Layout() {
     <CartProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="store/[id]" />
         <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
