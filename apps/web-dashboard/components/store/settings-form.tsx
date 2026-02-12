@@ -28,15 +28,15 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
       if (!file) return
 
       const fileExt = file.name.split('.').pop()
-      const fileName = `stores/${store.id}_${Date.now()}.${fileExt}`
+      const fileName = `${store.id}_${Date.now()}.${fileExt}`
 
       const { error: uploadError } = await supabase.storage
-        .from('products')
+        .from('stores')
         .upload(fileName, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage.from('products').getPublicUrl(fileName)
+      const { data } = supabase.storage.from('stores').getPublicUrl(fileName)
       setFormData({ ...formData, image_url: data.publicUrl })
     } catch (error) {
       console.error('Error uploading image:', error)
