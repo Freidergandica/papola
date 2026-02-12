@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCart } from '../context/CartContext';
+import { shadowStyles } from '../styles/shadows';
 
 export default function CartScreen() {
   const { items, removeItem, updateQuantity, total, clearCart, discountAmount, appliedDeal } = useCart();
@@ -75,7 +76,7 @@ export default function CartScreen() {
             )}
           />
           
-          <View className="border-t border-gray-100 p-6 bg-white shadow-lg">
+          <View className="border-t border-gray-100 p-6 bg-white" style={shadowStyles.lg}>
             <View className="flex-row justify-between mb-2">
                <Text className="text-gray-500">Subtotal</Text>
                <Text className="text-gray-900 font-bold">${total.toFixed(2)}</Text>
@@ -99,7 +100,8 @@ export default function CartScreen() {
             </View>
 
             <TouchableOpacity
-              className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20"
+              className="bg-papola-blue py-4 rounded-2xl items-center"
+              style={shadowStyles.blue}
               onPress={handleCheckout}
             >
               <Text className="text-white font-bold text-lg">Realizar Pedido</Text>

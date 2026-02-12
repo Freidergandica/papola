@@ -2,6 +2,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CountdownTimer } from './CountdownTimer';
 import { Deal } from '../types';
+import { shadowStyles } from '../styles/shadows';
 
 interface DealCardProps {
   deal: Deal;
@@ -14,9 +15,10 @@ export function DealCard({ deal, onPress, featured }: DealCardProps) {
 
   return (
     <TouchableOpacity
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${
+      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden ${
         featured ? 'w-72 mr-4' : 'mb-4'
       }`}
+      style={shadowStyles.sm}
       activeOpacity={0.7}
       onPress={onPress}
     >

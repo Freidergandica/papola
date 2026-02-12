@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { Store, Product, Deal } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { DealCard } from '../../components/DealCard';
+import { shadowStyles } from '../../styles/shadows';
 
 export default function StoreDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -109,7 +110,8 @@ export default function StoreDetailsScreen() {
           
           <TouchableOpacity 
             onPress={() => router.back()}
-            className="absolute top-12 left-4 w-10 h-10 bg-white/90 rounded-full items-center justify-center shadow-sm"
+            className="absolute top-12 left-4 w-10 h-10 bg-white/90 rounded-full items-center justify-center"
+            style={shadowStyles.sm}
           >
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
@@ -175,9 +177,9 @@ export default function StoreDetailsScreen() {
                     source={{ uri: product.image_url }}
                     className="w-24 h-24 rounded-xl bg-gray-100"
                   />
-                  <View className={`absolute bottom-0 right-0 rounded-full w-8 h-8 items-center justify-center shadow-sm ${
+                  <View className={`absolute bottom-0 right-0 rounded-full w-8 h-8 items-center justify-center ${
                     addedProductId === product.id ? 'bg-green-500' : 'bg-papola-blue'
-                  }`}>
+                  }`} style={shadowStyles.sm}>
                     <Ionicons name={addedProductId === product.id ? 'checkmark' : 'add'} size={20} color="white" />
                   </View>
                 </View>
@@ -192,7 +194,8 @@ export default function StoreDetailsScreen() {
         {cartItemCount > 0 && (
           <View className="absolute bottom-8 left-0 right-0 px-6">
             <TouchableOpacity 
-              className="bg-papola-blue py-4 rounded-2xl flex-row items-center justify-between px-6 shadow-xl shadow-papola-blue-20"
+              className="bg-papola-blue py-4 rounded-2xl flex-row items-center justify-between px-6"
+              style={shadowStyles.blue}
               onPress={() => router.push('/cart')}
             >
               <View className="flex-row items-center">

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabase';
+import { shadowStyles } from '../styles/shadows';
 
 type PaymentMethod = 'pago_movil' | 'c2p' | 'cash';
 
@@ -286,7 +287,8 @@ export default function CheckoutScreen() {
           {/* Confirm Button */}
           <View className="px-4 pb-6 pt-3 bg-white border-t border-gray-100">
             <TouchableOpacity
-              className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20"
+              className="bg-papola-blue py-4 rounded-2xl items-center"
+              style={shadowStyles.blue}
               onPress={handlePlaceOrder}
               disabled={submitting}
             >

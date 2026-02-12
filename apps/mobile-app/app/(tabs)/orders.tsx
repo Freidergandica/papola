@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { Order } from '../../types';
 import { useOrderUpdates } from '../../hooks/useOrderUpdates';
+import { shadowStyles } from '../../styles/shadows';
 
 const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
   pending: { label: 'Pendiente', color: '#eab308', icon: 'time-outline' },
@@ -104,7 +105,7 @@ export default function OrdersScreen() {
           renderItem={({ item: order }) => {
             const status = statusConfig[order.status] || statusConfig.pending;
             return (
-              <View className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 p-4">
+              <View className="bg-white rounded-2xl border border-gray-100 mb-4 p-4" style={shadowStyles.sm}>
                 {/* Header */}
                 <View className="flex-row items-center justify-between mb-3">
                   <View className="flex-row items-center">

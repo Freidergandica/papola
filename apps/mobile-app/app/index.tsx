@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import { shadowStyles } from '../styles/shadows';
 
 export default function LoginScreen() {
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
@@ -99,14 +100,16 @@ export default function LoginScreen() {
 
         {/* Auth Method Tabs */}
         <View className="flex-row bg-gray-100 p-1 rounded-xl mb-8">
-          <TouchableOpacity 
-            className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'email' ? 'bg-white shadow-sm' : ''}`}
+          <TouchableOpacity
+            className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'email' ? 'bg-white' : ''}`}
+            style={authMethod === 'email' ? shadowStyles.sm : undefined}
             onPress={() => { setAuthMethod('email'); setWaitingForOtp(false); }}
           >
             <Text className={`font-medium ${authMethod === 'email' ? 'text-papola-blue' : 'text-gray-500'}`}>Correo</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'phone' ? 'bg-white shadow-sm' : ''}`}
+          <TouchableOpacity
+            className={`flex-1 py-2 rounded-lg items-center ${authMethod === 'phone' ? 'bg-white' : ''}`}
+            style={authMethod === 'phone' ? shadowStyles.sm : undefined}
             onPress={() => setAuthMethod('phone')}
           >
             <Text className={`font-medium ${authMethod === 'phone' ? 'text-papola-blue' : 'text-gray-500'}`}>Teléfono</Text>
@@ -137,8 +140,9 @@ export default function LoginScreen() {
                   secureTextEntry
                 />
               </View>
-              <TouchableOpacity 
-                className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-2 active:bg-papola-blue-80"
+              <TouchableOpacity
+                className="bg-papola-blue py-4 rounded-2xl items-center mt-2"
+                style={shadowStyles.blue}
                 onPress={handleEmailAuth}
                 disabled={loading}
               >
@@ -157,8 +161,9 @@ export default function LoginScreen() {
                     onChangeText={setPhone}
                     keyboardType="phone-pad"
                   />
-                  <TouchableOpacity 
-                    className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-6 active:bg-papola-blue-80"
+                  <TouchableOpacity
+                    className="bg-papola-blue py-4 rounded-2xl items-center mt-6"
+                    style={shadowStyles.blue}
                     onPress={handlePhoneLogin}
                     disabled={loading}
                   >
@@ -176,8 +181,9 @@ export default function LoginScreen() {
                     keyboardType="number-pad"
                     maxLength={6}
                   />
-                  <TouchableOpacity 
-                    className="bg-papola-blue py-4 rounded-2xl items-center shadow-lg shadow-papola-blue-20 mt-6 active:bg-papola-blue-80"
+                  <TouchableOpacity
+                    className="bg-papola-blue py-4 rounded-2xl items-center mt-6"
+                    style={shadowStyles.blue}
                     onPress={handleVerifyOtp}
                     disabled={loading}
                   >
@@ -206,15 +212,17 @@ export default function LoginScreen() {
           </View>
 
           <View className="flex-row justify-center gap-x-6">
-            <TouchableOpacity 
-              className="w-14 h-14 bg-white border border-gray-200 rounded-full items-center justify-center shadow-sm"
+            <TouchableOpacity
+              className="w-14 h-14 bg-white border border-gray-200 rounded-full items-center justify-center"
+              style={shadowStyles.sm}
               onPress={() => handleSocialAuth('google')}
             >
               <FontAwesome name="google" size={24} color="#DB4437" />
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              className="w-14 h-14 bg-white border border-gray-200 rounded-full items-center justify-center shadow-sm"
+
+            <TouchableOpacity
+              className="w-14 h-14 bg-white border border-gray-200 rounded-full items-center justify-center"
+              style={shadowStyles.sm}
               onPress={() => handleSocialAuth('facebook')}
             >
               <FontAwesome name="facebook" size={24} color="#4267B2" />
@@ -229,3 +237,5 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
+
+

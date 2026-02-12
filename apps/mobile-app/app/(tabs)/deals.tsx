@@ -6,6 +6,7 @@ import { Deal } from '../../types';
 import { DealCard } from '../../components/DealCard';
 import { SkeletonDealCard } from '../../components/SkeletonDealCard';
 import { router } from 'expo-router';
+import { shadowStyles } from '../../styles/shadows';
 
 export default function DealsScreen() {
   const [featuredDeals, setFeaturedDeals] = useState<Deal[]>([]);
@@ -115,7 +116,7 @@ export default function DealsScreen() {
         </View>
 
         {allEmpty ? (
-          <View className="mx-4 bg-white p-8 rounded-3xl items-center shadow-sm border border-gray-100">
+          <View className="mx-4 bg-white p-8 rounded-3xl items-center border border-gray-100" style={shadowStyles.sm}>
             <Text className="text-papola-blue font-bold text-lg">Próximamente</Text>
             <Text className="text-gray-500 text-center mt-2">
               Aún no hay ofertas disponibles. ¡Vuelve pronto!

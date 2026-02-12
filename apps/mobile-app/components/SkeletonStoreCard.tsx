@@ -1,8 +1,9 @@
 import { View } from 'react-native';
+import { shadowStyles } from '../styles/shadows';
 
 export function SkeletonStoreCard() {
   return (
-    <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+    <View className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4" style={shadowStyles.sm}>
       <View className="w-full h-40 bg-gray-200 animate-pulse" />
       <View className="p-4">
         <View className="h-5 bg-gray-200 rounded-md w-3/4 animate-pulse" />

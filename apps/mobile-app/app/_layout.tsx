@@ -10,6 +10,7 @@ export default function Layout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="store/[id]" />
         <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="checkout" />
       </Stack>
     </CartProvider>
   );

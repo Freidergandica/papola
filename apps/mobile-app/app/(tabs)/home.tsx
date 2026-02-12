@@ -6,6 +6,7 @@ import { Store } from '../../types';
 import { StoreCard } from '../../components/StoreCard';
 import { SkeletonStoreCard } from '../../components/SkeletonStoreCard';
 import { router } from 'expo-router';
+import { shadowStyles } from '../../styles/shadows';
 
 export default function HomeScreen() {
   const [stores, setStores] = useState<Store[]>([]);
@@ -70,7 +71,7 @@ export default function HomeScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1F29DE" />
           }
           ListEmptyComponent={
-            <View className="mt-8 bg-white p-6 rounded-3xl items-center shadow-sm border border-gray-100">
+            <View className="mt-8 bg-white p-6 rounded-3xl items-center border border-gray-100" style={shadowStyles.sm}>
                <Text className="text-papola-blue font-bold text-lg">Próximamente</Text>
                <Text className="text-gray-500 text-center mt-2">Aún no hay restaurantes disponibles en tu zona.</Text>
             </View>

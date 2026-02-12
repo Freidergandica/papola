@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Store } from '../types';
 import { Ionicons } from '@expo/vector-icons';
+import { shadowStyles } from '../styles/shadows';
 
 interface StoreCardProps {
   store: Store;
@@ -10,7 +11,8 @@ interface StoreCardProps {
 export function StoreCard({ store, onPress }: StoreCardProps) {
   return (
     <TouchableOpacity 
-      className="bg-white rounded-2xl mb-4 shadow-sm border border-gray-100 overflow-hidden"
+      className="bg-white rounded-2xl mb-4 border border-gray-100 overflow-hidden"
+      style={shadowStyles.sm}
       onPress={onPress}
       activeOpacity={0.7}
     >

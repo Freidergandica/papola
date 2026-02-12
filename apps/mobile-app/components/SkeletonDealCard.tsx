@@ -1,11 +1,13 @@
 import { View } from 'react-native';
+import { shadowStyles } from '../styles/shadows';
 
 export function SkeletonDealCard({ featured }: { featured?: boolean }) {
   return (
     <View
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${
+      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden ${
         featured ? 'w-72 mr-4' : 'mb-4'
       }`}
+      style={shadowStyles.sm}
     >
       <View className={`w-full ${featured ? 'h-36' : 'h-40'} bg-gray-200 animate-pulse`} />
       <View className="p-3">
