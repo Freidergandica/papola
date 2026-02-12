@@ -43,8 +43,6 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (!onboardingChecked) return;
-
-    // 1. Logo fades in + scale with spring bounce
     RNAnimated.parallel([
       RNAnimated.timing(logoOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
       RNAnimated.spring(logoScale, { toValue: 1, damping: 12, stiffness: 100, mass: 0.8, useNativeDriver: true }),
@@ -153,6 +151,10 @@ export default function LoginScreen() {
       Alert.alert('Error', error.message);
     }
   };
+
+  if (!onboardingChecked) {
+    return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
+  }
 
   return (
     <View className="flex-1 bg-white">
