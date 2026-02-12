@@ -46,6 +46,7 @@ export default function RegisterStorePage() {
 
     try {
       // 1. Crear Usuario con metadata completa de la tienda
+      console.log('Step 1: Signing up user...')
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -62,8 +63,13 @@ export default function RegisterStorePage() {
         }
       })
 
-      if (authError) throw authError
+      if (authError) {
+        console.error('Auth error:', authError.message, authError.status, authError.name)
+        throw new Error(authError.message || `Error de autenticación (${authError.status})`)
+      }
       if (!authData.user) throw new Error('No se pudo crear el usuario')
+
+      console.log('Step 1 OK. User created:', authData.user.id, 'Session:', !!authData.session)
 
       // Verificar si se requiere confirmación de correo (sesión es null)
       if (!authData.session) {
@@ -75,26 +81,24 @@ export default function RegisterStorePage() {
       const userId = authData.user.id
 
       // 2. Crear Perfil (Store Owner)
-      // Nota: Esto debería hacerse idealmente con un Trigger en Supabase, 
-      // pero lo haremos aquí explícitamente por seguridad del flujo.
-      // Si ya existe por trigger, el insert podría fallar o ignorarse.
-      // Intentaremos actualizar si ya existe o insertar.
-      
+      console.log('Step 2: Creating profile...')
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: userId,
           email: email,
           role: 'store_owner',
-          full_name: storeName // Usamos el nombre de la tienda como nombre temporal
+          full_name: storeName
         })
 
       if (profileError) {
-        console.error('Profile Error:', profileError)
-        // No bloqueamos, seguimos intentando crear la tienda
+        console.error('Profile error:', profileError.message, profileError.code, profileError.details)
+      } else {
+        console.log('Step 2 OK. Profile created.')
       }
 
       // 3. Crear Tienda
+      console.log('Step 3: Creating store...')
       const { error: storeError } = await supabase
         .from('stores')
         .insert({
@@ -104,20 +108,23 @@ export default function RegisterStorePage() {
           phone: storePhone,
           description: storeDescription,
           address: storeAddress,
-          is_active: false, // Inactivo por defecto, requiere aprobación
+          is_active: false,
           rating: 5.0
         })
 
-      if (storeError) throw storeError
+      if (storeError) {
+        console.error('Store error:', storeError.message, storeError.code, storeError.details)
+        throw new Error(storeError.message || 'Error al crear la tienda')
+      }
 
-      // Éxito
-      // Redirigir a una página de éxito o login
+      console.log('Step 3 OK. Store created.')
       alert('Registro exitoso. Tu tienda está pendiente de aprobación.')
       router.push('/login')
 
     } catch (err: any) {
-      console.error(err)
-      setError(err.message || 'Ocurrió un error durante el registro')
+      console.error('Registration error:', err)
+      const message = err?.message || err?.error_description || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err))
+      setError(message || 'Ocurrió un error durante el registro')
     } finally {
       setLoading(false)
     }
