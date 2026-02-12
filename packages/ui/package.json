@@ -8,10 +8,6 @@
     "lint": "eslint *.ts*"
   },
   "devDependencies": {
-    "react": "^18.2.0",
     "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "react": ">=18"
   }
 }
