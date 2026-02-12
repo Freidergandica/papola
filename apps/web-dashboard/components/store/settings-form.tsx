@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
-import { Store } from '@/types' // Using our new types file
+import { Loader2, Upload, X } from 'lucide-react'
+import { Store } from '@/types'
 
 export default function StoreSettingsForm({ store }: { store: Store }) {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const [formData, setFormData] = useState({
@@ -19,6 +20,31 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
     category: store.category || '',
     image_url: store.image_url || ''
   })
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true)
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      const fileExt = file.name.split('.').pop()
+      const fileName = `stores/${store.id}_${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(fileName, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('products').getPublicUrl(fileName)
+      setFormData({ ...formData, image_url: data.publicUrl })
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setMessage({ type: 'error', text: 'Error al subir la imagen' })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -104,16 +130,58 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
             </div>
 
              <div className="col-span-6">
-              <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">URL del Logo</label>
-              <input
-                type="url"
-                name="image_url"
-                id="image_url"
-                value={formData.image_url}
-                onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
-              />
-               <p className="mt-2 text-xs text-gray-500">Recomendado: Imagen cuadrada (1:1)</p>
+              <label className="block text-sm font-medium text-gray-700">Logo del Comercio</label>
+              <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative hover:border-papola-blue transition-colors">
+                <div className="space-y-1 text-center">
+                  {formData.image_url ? (
+                    <div className="relative w-full h-48 mx-auto mb-4">
+                      <img
+                        src={formData.image_url}
+                        alt="Logo"
+                        className="h-48 object-contain mx-auto rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '' })}
+                        className="absolute top-0 right-0 -mr-2 -mt-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600 justify-center">
+                        <label
+                          htmlFor="logo-upload"
+                          className="relative cursor-pointer bg-white rounded-md font-medium text-papola-blue hover:text-papola-blue-80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-papola-blue"
+                        >
+                          <span>Subir un archivo</span>
+                          <input
+                            id="logo-upload"
+                            name="logo-upload"
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploading}
+                          />
+                        </label>
+                        <p className="pl-1">o arrastrar y soltar</p>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 5MB. Recomendado: Imagen cuadrada (1:1)</p>
+                    </>
+                  )}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-md">
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 text-papola-blue animate-spin" />
+                        <span className="text-sm text-papola-blue mt-2">Subiendo imagen...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
