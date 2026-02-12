@@ -1,19 +1,15 @@
-import { View, Text, FlatList, TouchableOpacity, Animated, Dimensions, ViewToken } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Animated, Dimensions, ViewToken, Image, ImageSourcePropType } from 'react-native';
 import { useRef, useState, useCallback } from 'react';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { shadowStyles } from '../styles/shadows';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CIRCLE_SIZE = SCREEN_WIDTH * 0.65;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const IMAGE_HEIGHT = SCREEN_HEIGHT * 0.48;
+const TEAL_BG = '#7FB5B0';
 
 type Slide = {
   id: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  circleColor: string;
-  iconColor: string;
+  image: ImageSourcePropType;
   title: string;
   description: string;
 };
@@ -21,27 +17,21 @@ type Slide = {
 const slides: Slide[] = [
   {
     id: '1',
-    icon: 'cart-outline',
-    circleColor: '#FECDD3',
-    iconColor: '#E11D48',
-    title: '¡Descubre un mundo\nde ahorro y sabor!',
-    description: 'PaPola te conecta con las mejores ofertas de productos cerca de su fecha de vencimiento a precios increíbles.',
+    image: require('../assets/onboarding-1.png'),
+    title: '¡Descubre un mundo de\nahorro y sabor!',
+    description: 'Bienvenido a la app que te permitirá disfrutar de las mejores ofertas en los productos de tus tiendas favoritas.',
   },
   {
     id: '2',
-    icon: 'compass-outline',
-    circleColor: '#D2D4F8',
-    iconColor: '#4F46E5',
+    image: require('../assets/onboarding-2.png'),
     title: 'Encuentra las mejores\nofertas cerca de ti',
-    description: 'Explora tiendas y supermercados en tu zona que ofrecen descuentos exclusivos en productos seleccionados.',
+    description: 'Podrás convertirte en un explorador urbano y descubrir las mejores ofertas en los mejores productos de tu ciudad.',
   },
   {
     id: '3',
-    icon: 'leaf-outline',
-    circleColor: '#FED7AA',
-    iconColor: '#EA580C',
-    title: '¡Un planeta sano para\nun futuro mejor!',
-    description: 'Al comprar estos productos ayudas a reducir el desperdicio de alimentos y cuidas el medio ambiente.',
+    image: require('../assets/onboarding-3.png'),
+    title: 'Informate de las liquidaciones\ndel comercio',
+    description: 'Accede a las notificaciones de tus productos preferidos en remate.',
   },
 ];
 
@@ -76,40 +66,35 @@ export default function OnboardingScreen() {
   }, [currentIndex, completeOnboarding]);
 
   const renderSlide = useCallback(({ item }: { item: Slide }) => (
-    <View style={{ width: SCREEN_WIDTH, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
-      <View
-        style={{
-          width: CIRCLE_SIZE,
-          height: CIRCLE_SIZE,
-          borderRadius: CIRCLE_SIZE / 2,
-          backgroundColor: item.circleColor,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 48,
-        }}
-      >
-        <Ionicons name={item.icon} size={CIRCLE_SIZE * 0.4} color={item.iconColor} />
+    <View style={{ width: SCREEN_WIDTH, backgroundColor: TEAL_BG }}>
+      {/* Image */}
+      <View style={{ overflow: 'hidden', borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
+        <Image
+          source={item.image}
+          style={{ width: SCREEN_WIDTH, height: IMAGE_HEIGHT }}
+          resizeMode="cover"
+        />
       </View>
-      <Text style={{ fontSize: 26, fontWeight: '700', color: '#1F2937', textAlign: 'center', lineHeight: 34, marginBottom: 16 }}>
-        {item.title}
-      </Text>
-      <Text style={{ fontSize: 16, color: '#6B7280', textAlign: 'center', lineHeight: 24, paddingHorizontal: 8 }}>
-        {item.description}
-      </Text>
+
+      {/* Text content */}
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', marginTop: 0, paddingHorizontal: 32, paddingTop: 32 }}>
+        <Text style={{ fontSize: 24, fontWeight: '700', color: '#1F2937', textAlign: 'center', lineHeight: 32, marginBottom: 16 }}>
+          {item.title}
+        </Text>
+        <Text style={{ fontSize: 15, color: '#6B7280', textAlign: 'center', lineHeight: 22 }}>
+          {item.description}
+        </Text>
+      </View>
     </View>
   ), []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'bottom']}>
-      {/* Skip button */}
-      <View style={{ alignItems: 'flex-end', paddingHorizontal: 24, paddingTop: 8 }}>
-        <TouchableOpacity onPress={completeOnboarding} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={{ fontSize: 16, color: '#6B7280', fontWeight: '500' }}>Saltar</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      {/* Teal top area behind the image */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: IMAGE_HEIGHT, backgroundColor: TEAL_BG }} />
 
       {/* Slides */}
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View style={{ flex: 1 }}>
         <Animated.FlatList
           ref={flatListRef}
           data={slides}
@@ -130,9 +115,9 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Bottom section: dots + button */}
-      <View style={{ paddingHorizontal: 32, paddingBottom: 24 }}>
+      <View style={{ paddingHorizontal: 48, paddingBottom: 48 }}>
         {/* Pagination dots */}
-        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 32 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 28 }}>
           {slides.map((_, i) => {
             const inputRange = [(i - 1) * SCREEN_WIDTH, i * SCREEN_WIDTH, (i + 1) * SCREEN_WIDTH];
 
@@ -171,16 +156,15 @@ export default function OnboardingScreen() {
           style={{
             backgroundColor: '#1F29DE',
             paddingVertical: 16,
-            borderRadius: 16,
+            borderRadius: 28,
             alignItems: 'center',
-            ...shadowStyles.blue,
           }}
         >
-          <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '700' }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>
             {currentIndex === slides.length - 1 ? 'Comenzar' : 'Próximo'}
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
