@@ -4,21 +4,41 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "env": {
+        "EXPO_USE_METRO_WORKSPACE_ROOT": "1",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://xsjaqtjvekvumfredaiz.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhzamFxdGp2ZWt2dW1mcmVkYWl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NjcwNzEsImV4cCI6MjA4NjE0MzA3MX0.uf6pLri2MM2FL0S0_kEOzbaecoOB2FETaSCf9t9XX40"
+      }
+    },
     "preview": {
+      "extends": "base",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
+      }
+    },
+    "testflight": {
+      "extends": "base",
+      "distribution": "store",
+      "ios": {
+        "autoIncrement": true
       }
     },
     "production": {
+      "extends": "base",
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
-      },
-      "env": {
-        "EXPO_USE_METRO_WORKSPACE_ROOT": "1"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "garmierkeinny@gmail.com",
+        "ascAppId": "com.papolaapp.mobile",
+        "appleTeamId": "NT68V29SN9"
       }
     }
   }

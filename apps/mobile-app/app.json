@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Papola necesita tu ubicación para mostrarte tiendas cercanas y facilitar la entrega de tus pedidos.",
         "NSCameraUsageDescription": "Papola necesita acceso a tu cámara para tomar una foto de perfil.",
-        "NSPhotoLibraryUsageDescription": "Papola necesita acceso a tus fotos para elegir una imagen de perfil."
+        "NSPhotoLibraryUsageDescription": "Papola necesita acceso a tus fotos para elegir una imagen de perfil.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
