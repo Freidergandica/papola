@@ -163,7 +163,6 @@ export default function ProfileEditScreen() {
         .update({
           first_name: firstName.trim() || null,
           last_name: lastName.trim() || null,
-          full_name: [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || null,
           identification_number: identificationNumber.trim() || null,
           phone_number: phoneNumber.trim() || null,
           date_of_birth: dateOfBirth.trim() || null,

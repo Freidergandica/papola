@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { Profile } from '../../types';
@@ -23,9 +24,11 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
 
   const fetchProfile = async () => {
     try {
@@ -96,7 +99,7 @@ export default function ProfileScreen() {
             <View className="flex-1 ml-4">
               <Text className="text-white text-lg font-bold">{displayName}</Text>
               <Text className="text-white/70 text-sm mt-0.5">{displayEmail}</Text>
-              <TouchableOpacity className="mt-1">
+              <TouchableOpacity className="mt-1" onPress={() => router.push('/profile-edit')}>
                 <Text className="text-white/90 text-xs font-medium underline">Ver perfil</Text>
               </TouchableOpacity>
             </View>

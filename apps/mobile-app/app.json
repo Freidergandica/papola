@@ -16,7 +16,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.papolaapp.mobile",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Papola necesita tu ubicación para mostrarte tiendas cercanas y facilitar la entrega de tus pedidos."
+        "NSLocationWhenInUseUsageDescription": "Papola necesita tu ubicación para mostrarte tiendas cercanas y facilitar la entrega de tus pedidos.",
+        "NSCameraUsageDescription": "Papola necesita acceso a tu cámara para tomar una foto de perfil.",
+        "NSPhotoLibraryUsageDescription": "Papola necesita acceso a tus fotos para elegir una imagen de perfil."
       }
     },
     "android": {
@@ -42,6 +44,13 @@
         "expo-router",
         {
           "root": "./app"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Papola necesita acceso a tus fotos para elegir una imagen de perfil.",
+          "cameraPermission": "Papola necesita acceso a tu cámara para tomar una foto de perfil."
         }
       ],
       [
