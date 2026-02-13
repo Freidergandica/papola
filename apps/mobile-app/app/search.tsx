@@ -168,6 +168,7 @@ export default function SearchScreen() {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+        style={{ flexGrow: 0 }}
       >
         {CATEGORY_LABELS.map((cat) => (
           <TouchableOpacity
