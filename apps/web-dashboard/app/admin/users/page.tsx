@@ -38,6 +38,7 @@ export default async function UsersPage() {
   const adminCount = users?.filter(u => u.role === 'admin').length || 0
   const storeOwnerCount = users?.filter(u => u.role === 'store_owner').length || 0
   const customerCount = users?.filter(u => u.role === 'customer').length || 0
+  const pendingCount = users?.filter(u => u.role === 'pending_store_owner').length || 0
 
   return (
     <div>
@@ -47,7 +48,7 @@ export default async function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="text-sm font-medium text-gray-500">Total Usuarios</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{totalUsers}</p>
@@ -63,6 +64,10 @@ export default async function UsersPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="text-sm font-medium text-gray-500">Clientes</p>
           <p className="text-2xl font-bold text-gray-700 mt-1">{customerCount}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-yellow-200 p-4">
+          <p className="text-sm font-medium text-yellow-600">Pendientes</p>
+          <p className="text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
         </div>
       </div>
 

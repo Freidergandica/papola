@@ -10,6 +10,17 @@ export default async function StoreDashboard() {
 
   if (!user) redirect('/login')
 
+  // Defense-in-depth: verify role before showing dashboard
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role === 'pending_store_owner') {
+    redirect('/store/pending')
+  }
+
   const { data: store } = await supabase
     .from('stores')
     .select('*')

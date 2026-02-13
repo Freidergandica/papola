@@ -32,38 +32,21 @@ export default function LoginPage() {
 
       if (!user) throw new Error('No se pudo obtener el usuario')
 
-      // Verificar rol
-      let { data: profile, error: profileError } = await supabase
+      // Verificar rol desde la DB (perfil creado por trigger)
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-      if (profileError) {
-        console.log('Perfil no encontrado, intentando crear uno nuevo...', profileError)
-
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: user.id,
-            email: user.email,
-            role: user.user_metadata?.role || 'store_owner',
-            full_name: user.user_metadata?.store_name || user.user_metadata?.full_name || user.email?.split('@')[0]
-          })
-          .select('role')
-          .single()
-
-        if (createError) {
-           console.error('Error fatal creando perfil:', createError)
-           setError('Error de integridad de cuenta. Por favor contacta soporte.')
-           await supabase.auth.signOut()
-           return
-        }
-
-        profile = newProfile
+      if (profileError || !profile) {
+        console.error('Perfil no encontrado:', profileError)
+        setError('Error de integridad de cuenta. Por favor contacta soporte.')
+        await supabase.auth.signOut()
+        return
       }
 
-      // Completar registro pendiente: si tiene metadata de tienda pero no tiene tienda en DB
+      // Completar registro pendiente: crear tienda si tiene metadata pero no tienda en DB
       const metadata = user.user_metadata
       if (metadata?.pending_store && metadata?.store_name) {
         const { data: existingStore } = await supabase
@@ -73,16 +56,6 @@ export default function LoginPage() {
           .single()
 
         if (!existingStore) {
-          // Actualizar rol a store_owner si no lo es
-          if (profile?.role !== 'store_owner' && profile?.role !== 'admin') {
-            await supabase
-              .from('profiles')
-              .update({ role: 'store_owner' })
-              .eq('id', user.id)
-            profile = { role: 'store_owner' }
-          }
-
-          // Crear la tienda con los datos guardados en metadata
           const { error: storeError } = await supabase
             .from('stores')
             .insert({
@@ -99,7 +72,6 @@ export default function LoginPage() {
           if (storeError) {
             console.error('Error creando tienda pendiente:', storeError)
           } else {
-            // Limpiar metadata de registro pendiente
             await supabase.auth.updateUser({
               data: { pending_store: false }
             })
@@ -107,12 +79,13 @@ export default function LoginPage() {
         }
       }
 
-      if (profile?.role === 'admin') {
+      if (profile.role === 'admin') {
         router.push('/admin/dashboard')
-      } else if (profile?.role === 'store_owner') {
+      } else if (profile.role === 'store_owner') {
         router.push('/store/dashboard')
+      } else if (profile.role === 'pending_store_owner') {
+        router.push('/store/pending')
       } else {
-        // Otros roles no tienen acceso al dashboard web por ahora
         setError('No tienes permisos para acceder a este panel.')
         await supabase.auth.signOut()
         return

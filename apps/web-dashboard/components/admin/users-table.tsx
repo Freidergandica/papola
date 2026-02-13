@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Search, Shield, Store, User, ChevronDown } from 'lucide-react'
+import { Search, Shield, Store, User, ChevronDown, Clock, Check, X } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -24,6 +24,7 @@ interface StoreInfo {
 const roleLabels: Record<string, { label: string; color: string; icon: typeof Shield }> = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700 border-red-200', icon: Shield },
   store_owner: { label: 'Comercio', color: 'bg-papola-blue-20 text-papola-blue border-papola-blue', icon: Store },
+  pending_store_owner: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
   customer: { label: 'Cliente', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: User },
   driver: { label: 'Repartidor', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: User },
 }
@@ -88,6 +89,7 @@ export default function UsersTable({
           className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue"
         >
           <option value="all">Todos los roles</option>
+          <option value="pending_store_owner">Pendientes de Aprobación</option>
           <option value="admin">Administradores</option>
           <option value="store_owner">Comercios</option>
           <option value="customer">Clientes</option>
@@ -181,6 +183,25 @@ export default function UsersTable({
                     <td className="px-6 py-4 whitespace-nowrap">
                       {isSelf ? (
                         <span className="text-xs text-gray-400">—</span>
+                      ) : user.role === 'pending_store_owner' ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => changeRole(user.id, 'store_owner')}
+                            disabled={changingRole === user.id}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
+                          >
+                            <Check className="h-3 w-3" />
+                            Aprobar
+                          </button>
+                          <button
+                            onClick={() => changeRole(user.id, 'customer')}
+                            disabled={changingRole === user.id}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50 transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                            Rechazar
+                          </button>
+                        </div>
                       ) : (
                         <div className="relative">
                           <select

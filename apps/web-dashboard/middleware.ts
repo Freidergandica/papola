@@ -60,6 +60,15 @@ export async function middleware(request: NextRequest) {
     const role = profile?.role;
     const url = request.nextUrl.clone();
 
+    // pending_store_owner can only access /store/pending
+    if (role === 'pending_store_owner') {
+      if (pathname === '/store/pending') {
+        return supabaseResponse;
+      }
+      url.pathname = '/store/pending';
+      return NextResponse.redirect(url);
+    }
+
     // /admin/* requires admin role
     if (pathname.startsWith('/admin') && role !== 'admin') {
       url.pathname = role === 'store_owner' ? '/store/dashboard' : '/login';
