@@ -5,7 +5,11 @@ const { withNativeWind } = require("nativewind/metro");
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "../..");
 
-const config = getDefaultConfig(projectRoot);
+// Pass monorepo root to avoid path duplication in workspace detection
+const config = getDefaultConfig(monorepoRoot);
+
+// Override project root back to the app directory
+config.projectRoot = projectRoot;
 
 // Monorepo: watch the entire monorepo for changes
 config.watchFolders = [monorepoRoot];
