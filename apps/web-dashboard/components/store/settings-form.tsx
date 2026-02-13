@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Upload, X } from 'lucide-react'
 import { Store } from '@/types'
+import { STORE_CATEGORIES } from '@/lib/categories'
 
 export default function StoreSettingsForm({ store }: { store: Store }) {
   const supabase = createClient()
@@ -46,7 +47,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
@@ -119,14 +120,18 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
 
             <div className="col-span-6 sm:col-span-3">
               <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
-              <input
-                type="text"
+              <select
                 name="category"
                 id="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white placeholder-gray-400"
-              />
+                className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full shadow-sm sm:text-sm border-gray-300 rounded-md border py-2 px-3 text-gray-900 bg-white"
+              >
+                <option value="">Seleccionar categoría</option>
+                {STORE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
 
              <div className="col-span-6">

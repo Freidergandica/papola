@@ -1,7 +1,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { MapPin, Star, Power, PowerOff, Edit2 } from 'lucide-react'
+import { MapPin, Star, Power, PowerOff, Edit2, Tag } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function StoresPage() {
@@ -59,18 +59,25 @@ export default async function StoresPage() {
                  </span>
               </div>
               
-              <p className="text-gray-500 text-sm mb-4 line-clamp-2">{store.description}</p>
-              
+              <p className="text-gray-500 text-sm mb-3 line-clamp-2">{store.description}</p>
+
+              {store.category && (
+                <div className="flex items-center text-sm mb-2">
+                  <Tag className="w-3.5 h-3.5 mr-1.5 text-papola-blue" />
+                  <span className="text-papola-blue font-medium">{store.category}</span>
+                </div>
+              )}
+
               <div className="flex items-center text-gray-400 text-sm mb-6">
                 <MapPin className="w-4 h-4 mr-2" />
                 <span className="truncate">{store.address}</span>
               </div>
 
               <div className="mt-auto flex gap-3 pt-4 border-t border-gray-100">
-                 <button className="flex-1 flex items-center justify-center py-2 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium text-sm transition-colors">
+                 <Link href={`/admin/stores/edit?id=${store.id}`} className="flex-1 flex items-center justify-center py-2 px-4 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium text-sm transition-colors">
                     <Edit2 className="w-4 h-4 mr-2" />
                     Editar
-                 </button>
+                 </Link>
                  
                  <form action={toggleStoreStatus.bind(null, store.id, store.is_active)} className="flex-1">
                    <button 

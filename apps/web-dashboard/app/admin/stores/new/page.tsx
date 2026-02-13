@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Save, Loader2 } from 'lucide-react'
+import { STORE_CATEGORIES } from '@/lib/categories'
 
 export default function NewStorePage() {
   async function createStore(formData: FormData) {
@@ -11,17 +12,19 @@ export default function NewStorePage() {
     const name = formData.get('name') as string
     const description = formData.get('description') as string
     const address = formData.get('address') as string
+    const category = formData.get('category') as string
     const image_url = formData.get('image_url') as string
     const delivery_min = parseInt(formData.get('delivery_min') as string) || 15
     const delivery_max = parseInt(formData.get('delivery_max') as string) || 45
 
     const supabase = await createClient()
-    
+
     // Create the store
     const { error } = await supabase.from('stores').insert({
       name,
       description,
       address,
+      category,
       image_url,
       delivery_time_min: delivery_min,
       delivery_time_max: delivery_max,
@@ -71,6 +74,21 @@ export default function NewStorePage() {
             className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white placeholder-gray-400"
             placeholder="Breve descripción de los productos y servicios..."
           />
+        </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
+          <select
+            name="category"
+            id="category"
+            required
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white"
+          >
+            <option value="">Seleccionar categoría</option>
+            {STORE_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
 
         <div>

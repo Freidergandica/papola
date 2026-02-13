@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import UsersTable from '@/components/admin/users-table'
 
@@ -16,14 +17,16 @@ export default async function UsersPage() {
 
   if (profile?.role !== 'admin') redirect('/login')
 
-  // Fetch all users with their store info
-  const { data: users } = await supabase
+  // Use admin client to bypass RLS and fetch all profiles
+  const adminClient = createAdminClient()
+
+  const { data: users } = await adminClient
     .from('profiles')
     .select('id, email, full_name, phone_number, role, created_at, avatar_url')
     .order('created_at', { ascending: false })
 
   // Fetch stores to show which users own stores
-  const { data: stores } = await supabase
+  const { data: stores } = await adminClient
     .from('stores')
     .select('id, name, owner_id, is_active')
 
