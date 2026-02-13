@@ -20,6 +20,9 @@
     "testflight": {
       "extends": "base",
       "distribution": "store",
+      "cache": {
+        "disabled": true
+      },
       "ios": {
         "autoIncrement": true
       }
