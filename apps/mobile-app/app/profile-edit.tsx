@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { Profile } from '../types';
+import * as ImagePicker from 'expo-image-picker';
 
 const GENDER_OPTIONS: { value: NonNullable<Profile['gender']>; label: string }[] = [
   { value: 'male', label: 'Masculino' },
@@ -68,14 +69,45 @@ export default function ProfileEditScreen() {
   };
 
   const pickImage = async () => {
-    launchImage();
+    Alert.alert('Cambiar foto', 'Elige una opción', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Tomar foto', onPress: () => launchCamera() },
+      { text: 'Elegir de galería', onPress: () => launchGallery() },
+    ]);
   };
 
-  const launchImage = async () => {
-    Alert.alert(
-      'Próximamente',
-      'Para habilitar la cámara, reconstruye la app con:\nnpx expo run:ios',
-    );
+  const launchCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a la cámara para tomar fotos.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      uploadAvatar(result.assets[0].uri);
+    }
+  };
+
+  const launchGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tus fotos para elegir una imagen.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      uploadAvatar(result.assets[0].uri);
+    }
   };
 
   const uploadAvatar = async (uri: string) => {
