@@ -1,17 +1,19 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabase';
 import { shadowStyles } from '../styles/shadows';
+import { AddressPicker } from '../components/AddressPicker';
 
 type PaymentMethod = 'pago_movil' | 'c2p' | 'cash';
 
 export default function CheckoutScreen() {
   const { items, total, appliedDeal, discountAmount, clearCart, applyDeal } = useCart();
   const [address, setAddress] = useState('');
+  const [deliveryCoords, setDeliveryCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pago_movil');
@@ -33,6 +35,14 @@ export default function CheckoutScreen() {
 
     if (data) setExchangeRate(data.rate);
   };
+
+  const handleAddressSelect = useCallback(
+    (result: { address: string; latitude: number; longitude: number }) => {
+      setAddress(result.address);
+      setDeliveryCoords({ latitude: result.latitude, longitude: result.longitude });
+    },
+    []
+  );
 
   const finalTotal = Math.max(0, total - discountAmount);
   const totalVES = finalTotal * exchangeRate;
@@ -104,6 +114,8 @@ export default function CheckoutScreen() {
           customer_id: user.id,
           store_id: items[0]?.store_id,
           delivery_address: address,
+          delivery_latitude: deliveryCoords?.latitude ?? null,
+          delivery_longitude: deliveryCoords?.longitude ?? null,
           payment_method: paymentMethod,
           payment_currency: 'USD',
           exchange_rate: exchangeRate,
@@ -209,13 +221,7 @@ export default function CheckoutScreen() {
             {/* Delivery Address */}
             <View className="mb-6">
               <Text className="text-sm font-bold text-gray-900 mb-2">Dirección de entrega</Text>
-              <TextInput
-                className="border border-gray-300 rounded-xl px-4 py-3 text-sm"
-                placeholder="Ej: Av. Principal, Edificio X, Apto 1"
-                value={address}
-                onChangeText={setAddress}
-                multiline
-              />
+              <AddressPicker onAddressSelect={handleAddressSelect} />
             </View>
 
             {/* Payment Method */}

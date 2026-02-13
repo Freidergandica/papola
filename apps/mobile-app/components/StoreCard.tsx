@@ -6,9 +6,10 @@ import { shadowStyles } from '../styles/shadows';
 interface StoreCardProps {
   store: Store;
   onPress: () => void;
+  distance?: string;
 }
 
-export function StoreCard({ store, onPress }: StoreCardProps) {
+export function StoreCard({ store, onPress, distance }: StoreCardProps) {
   return (
     <TouchableOpacity 
       className="bg-white rounded-2xl mb-4 border border-gray-100 overflow-hidden"
@@ -52,6 +53,12 @@ export function StoreCard({ store, onPress }: StoreCardProps) {
             <Ionicons name="bicycle-outline" size={14} color="#6b7280" />
             <Text className="text-gray-500 text-xs ml-1">Envío Gratis</Text>
           </View>
+          {distance && (
+            <View className="flex-row items-center ml-4">
+              <Ionicons name="location-outline" size={14} color="#6b7280" />
+              <Text className="text-gray-500 text-xs ml-1">{distance}</Text>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>

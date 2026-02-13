@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Linking, Platform } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
@@ -8,6 +8,7 @@ import { Store, Product, Deal } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { DealCard } from '../../components/DealCard';
 import { shadowStyles } from '../../styles/shadows';
+import MapView, { Marker } from 'react-native-maps';
 
 export default function StoreDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -141,6 +142,49 @@ export default function StoreDetailsScreen() {
               <Text className="text-gray-700 ml-2 font-medium">Envío Gratis</Text>
             </View>
           </View>
+
+          {/* Location Map */}
+          {store.latitude != null && store.longitude != null && (
+            <View className="mb-8">
+              <Text className="text-lg font-bold text-gray-900 mb-3">Ubicación</Text>
+              <View className="rounded-2xl overflow-hidden" style={shadowStyles.sm}>
+                <MapView
+                  style={{ width: '100%', height: 180 }}
+                  initialRegion={{
+                    latitude: store.latitude,
+                    longitude: store.longitude,
+                    latitudeDelta: 0.005,
+                    longitudeDelta: 0.005,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                >
+                  <Marker
+                    coordinate={{
+                      latitude: store.latitude,
+                      longitude: store.longitude,
+                    }}
+                    title={store.name}
+                  />
+                </MapView>
+              </View>
+              <TouchableOpacity
+                className="flex-row items-center justify-center mt-3 py-2"
+                onPress={() => {
+                  const url = Platform.select({
+                    ios: `maps:0,0?q=${store.latitude},${store.longitude}`,
+                    android: `geo:0,0?q=${store.latitude},${store.longitude}(${encodeURIComponent(store.name)})`,
+                  });
+                  if (url) Linking.openURL(url);
+                }}
+              >
+                <Ionicons name="navigate-outline" size={18} color="#1F29DE" />
+                <Text className="text-papola-blue font-bold ml-2">Cómo llegar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Active Deals */}
           {deals.length > 0 && (

@@ -4,7 +4,7 @@ export interface Profile {
   full_name?: string;
   avatar_url?: string;
   phone_number?: string;
-  role: 'customer' | 'driver' | 'admin' | 'store_owner';
+  role: 'customer' | 'driver' | 'admin' | 'store_owner' | 'pending_store_owner';
   created_at?: string;
 }
 
@@ -21,6 +21,8 @@ export interface Store {
   rating?: number;
   delivery_time_min?: number;
   delivery_time_max?: number;
+  latitude?: number;
+  longitude?: number;
   is_active: boolean;
   created_at?: string;
 }
@@ -71,6 +73,8 @@ export interface Order {
   deal_id?: string;
   discount_amount?: number;
   delivery_address?: string;
+  delivery_latitude?: number;
+  delivery_longitude?: number;
   created_at?: string;
   items?: OrderItem[];
 }
