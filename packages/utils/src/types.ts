@@ -2,6 +2,11 @@ export interface Profile {
   id: string;
   email?: string;
   full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  identification_number?: string;
+  date_of_birth?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   avatar_url?: string;
   phone_number?: string;
   role: 'customer' | 'driver' | 'admin' | 'store_owner' | 'pending_store_owner';
