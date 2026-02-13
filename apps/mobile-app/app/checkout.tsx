@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { useCart } from '../context/CartContext';
+import { useAddress } from '../context/AddressContext';
 import { supabase } from '../lib/supabase';
 import { shadowStyles } from '../styles/shadows';
 import { AddressPicker } from '../components/AddressPicker';
@@ -12,8 +13,11 @@ type PaymentMethod = 'pago_movil' | 'c2p' | 'cash';
 
 export default function CheckoutScreen() {
   const { items, total, appliedDeal, discountAmount, clearCart, applyDeal } = useCart();
-  const [address, setAddress] = useState('');
-  const [deliveryCoords, setDeliveryCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const { selectedAddress, effectiveLocation } = useAddress();
+  const [address, setAddress] = useState(effectiveLocation?.address || '');
+  const [deliveryCoords, setDeliveryCoords] = useState<{ latitude: number; longitude: number } | null>(
+    effectiveLocation ? { latitude: effectiveLocation.latitude, longitude: effectiveLocation.longitude } : null
+  );
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pago_movil');
@@ -221,7 +225,12 @@ export default function CheckoutScreen() {
             {/* Delivery Address */}
             <View className="mb-6">
               <Text className="text-sm font-bold text-gray-900 mb-2">Dirección de entrega</Text>
-              <AddressPicker onAddressSelect={handleAddressSelect} />
+              <AddressPicker
+                onAddressSelect={handleAddressSelect}
+                initialAddress={effectiveLocation?.address}
+                initialLatitude={effectiveLocation?.latitude}
+                initialLongitude={effectiveLocation?.longitude}
+              />
             </View>
 
             {/* Payment Method */}

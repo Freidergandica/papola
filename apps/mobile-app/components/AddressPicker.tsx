@@ -15,9 +15,11 @@ interface AddressResult {
 interface AddressPickerProps {
   onAddressSelect: (result: AddressResult) => void;
   initialAddress?: string;
+  initialLatitude?: number;
+  initialLongitude?: number;
 }
 
-export function AddressPicker({ onAddressSelect, initialAddress }: AddressPickerProps) {
+export function AddressPicker({ onAddressSelect, initialAddress, initialLatitude, initialLongitude }: AddressPickerProps) {
   const { location } = useLocation();
   const mapRef = useRef<MapView>(null);
   const [address, setAddress] = useState(initialAddress || '');
@@ -25,8 +27,8 @@ export function AddressPicker({ onAddressSelect, initialAddress }: AddressPicker
   const [currentRegion, setCurrentRegion] = useState<Region | null>(null);
 
   const initialRegion = {
-    latitude: location?.latitude ?? 10.4806,
-    longitude: location?.longitude ?? -66.9036,
+    latitude: initialLatitude ?? location?.latitude ?? 10.4806,
+    longitude: initialLongitude ?? location?.longitude ?? -66.9036,
     latitudeDelta: 0.005,
     longitudeDelta: 0.005,
   };

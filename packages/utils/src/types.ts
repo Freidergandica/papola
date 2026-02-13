@@ -140,6 +140,18 @@ export interface DealRedemption {
   redeemed_at: string;
 }
 
+export interface UserAddress {
+  id: string;
+  user_id: string;
+  label: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  reference?: string;
+  is_primary: boolean;
+  created_at?: string;
+}
+
 export interface ExchangeRate {
   id: string;
   currency_pair: string;

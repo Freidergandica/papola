@@ -19,10 +19,9 @@ import { router } from 'expo-router';
 import { shadowStyles } from '../../styles/shadows';
 import { Ionicons } from '@expo/vector-icons';
 import { ImageSourcePropType } from 'react-native';
-import { useLocation } from '../../hooks/useLocation';
 import { sortByDistance, formatDistance, haversineDistance, StoreWithDistance } from '../../lib/geo';
 import { useCart } from '../../context/CartContext';
-import * as Location from 'expo-location';
+import { useAddress } from '../../context/AddressContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DEAL_CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -46,29 +45,11 @@ export default function HomeScreen() {
   const [minPrices, setMinPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [address, setAddress] = useState<string | null>(null);
   const [activeDealIndex, setActiveDealIndex] = useState(0);
 
-  const { location } = useLocation();
+  const { effectiveLocation } = useAddress();
   const { items } = useCart();
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  // Reverse geocoding
-  useEffect(() => {
-    if (!location) return;
-    Location.reverseGeocodeAsync({
-      latitude: location.latitude,
-      longitude: location.longitude,
-    })
-      .then((results) => {
-        if (results.length > 0) {
-          const r = results[0];
-          const parts = [r.street, r.city, r.region].filter(Boolean);
-          setAddress(parts.join(', '));
-        }
-      })
-      .catch(() => {});
-  }, [location]);
 
   const fetchData = async () => {
     try {
@@ -121,20 +102,20 @@ export default function HomeScreen() {
 
   // Nearby stores (sorted by distance)
   const nearbyStores: StoreWithDistance[] = useMemo(() => {
-    if (!location) return stores.slice(0, 10).map((s) => ({ ...s, distance: undefined }));
-    return sortByDistance(stores, location.latitude, location.longitude).slice(0, 10);
-  }, [stores, location]);
+    if (!effectiveLocation) return stores.slice(0, 10).map((s) => ({ ...s, distance: undefined }));
+    return sortByDistance(stores, effectiveLocation.latitude, effectiveLocation.longitude).slice(0, 10);
+  }, [stores, effectiveLocation]);
 
   // Popular stores (sorted by rating, already ordered from DB)
   const popularStores: StoreWithDistance[] = useMemo(() => {
     return stores.slice(0, 10).map((s) => {
       const distance =
-        location && s.latitude != null && s.longitude != null
-          ? haversineDistance(location.latitude, location.longitude, s.latitude, s.longitude)
+        effectiveLocation && s.latitude != null && s.longitude != null
+          ? haversineDistance(effectiveLocation.latitude, effectiveLocation.longitude, s.latitude, s.longitude)
           : undefined;
       return { ...s, distance };
     });
-  }, [stores, location]);
+  }, [stores, effectiveLocation]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -203,10 +184,14 @@ export default function HomeScreen() {
         </View>
 
         {/* ── Address bar ── */}
-        <TouchableOpacity className="mx-4 mb-3 flex-row items-center">
+        <TouchableOpacity
+          className="mx-4 mb-3 flex-row items-center"
+          activeOpacity={0.6}
+          onPress={() => router.push('/addresses')}
+        >
           <Ionicons name="location" size={18} color="#1F29DE" />
           <Text className="text-sm text-gray-700 font-medium ml-1.5 flex-1" numberOfLines={1}>
-            {address || 'Obteniendo ubicación...'}
+            {effectiveLocation?.address || 'Obteniendo ubicación...'}
           </Text>
           <Ionicons name="chevron-down" size={16} color="#9ca3af" />
         </TouchableOpacity>

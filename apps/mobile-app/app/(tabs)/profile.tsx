@@ -12,7 +12,7 @@ const comingSoon = () => Alert.alert('Próximamente', 'Esta función estará dis
 
 const MENU_ITEMS: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }[] = [
   { icon: 'person-outline', label: 'Perfil', onPress: () => router.push('/profile-edit') },
-  { icon: 'location-outline', label: 'Mis direcciones', onPress: comingSoon },
+  { icon: 'location-outline', label: 'Mis direcciones', onPress: () => router.push('/addresses') },
   { icon: 'receipt-outline', label: 'Historial de mis órdenes', onPress: () => router.push('/(tabs)/orders') },
   { icon: 'help-circle-outline', label: 'Ayuda', onPress: comingSoon },
   { icon: 'document-text-outline', label: 'Políticas de privacidad', onPress: comingSoon },
