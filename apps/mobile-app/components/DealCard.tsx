@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CountdownTimer } from './CountdownTimer';
 import { Deal } from '../types';
@@ -8,17 +8,21 @@ interface DealCardProps {
   deal: Deal;
   onPress?: () => void;
   featured?: boolean;
+  homeCarousel?: boolean;
 }
 
-export function DealCard({ deal, onPress, featured }: DealCardProps) {
+export function DealCard({ deal, onPress, featured, homeCarousel }: DealCardProps) {
   const discountLabel = getDiscountLabel(deal);
 
   return (
     <TouchableOpacity
       className={`bg-white rounded-2xl border border-gray-100 overflow-hidden ${
-        featured ? 'w-72 mr-4' : 'mb-4'
+        homeCarousel ? 'mr-3' : featured ? 'w-72 mr-4' : 'mb-4'
       }`}
-      style={shadowStyles.sm}
+      style={[
+        shadowStyles.sm,
+        homeCarousel ? { width: Dimensions.get('window').width - 48 } : undefined,
+      ]}
       activeOpacity={0.7}
       onPress={onPress}
     >
