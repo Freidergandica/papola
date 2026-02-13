@@ -256,7 +256,7 @@ export default function HomeScreen() {
               className="overflow-hidden"
               style={{ width: (SCREEN_WIDTH - 32 - 16) / 3, height: 100, borderRadius: 16 }}
               activeOpacity={0.8}
-              onPress={() => router.push('/search')}
+              onPress={() => router.push({ pathname: '/search', params: { category: cat.label } })}
             >
               <Image
                 source={cat.image}

@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
+  ScrollView,
   Image,
   ActivityIndicator,
 } from 'react-native';
@@ -13,15 +14,31 @@ import { supabase } from '../lib/supabase';
 import { Store, Product } from '../types';
 import { StoreCard } from '../components/StoreCard';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { shadowStyles } from '../styles/shadows';
+
+const CATEGORY_LABELS = [
+  'Comida',
+  'Estilo de vida',
+  'Mercado',
+  'Licores',
+  'Salud y bienestar',
+  'Mascotas',
+  'Hogar y Jardín',
+  'Tecnología',
+  'Entretenimiento',
+  'Servicios',
+];
 
 interface ProductWithStore extends Product {
   stores?: { id: string; name: string } | null;
 }
 
 export default function SearchScreen() {
+  const { category: categoryParam } = useLocalSearchParams<{ category?: string }>();
+
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [storeResults, setStoreResults] = useState<Store[]>([]);
   const [productResults, setProductResults] = useState<ProductWithStore[]>([]);
   const [loading, setLoading] = useState(false);
@@ -29,8 +46,8 @@ export default function SearchScreen() {
   const inputRef = useRef<TextInput>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const search = useCallback(async (text: string) => {
-    if (text.trim().length === 0) {
+  const search = useCallback(async (text: string, category: string | null) => {
+    if (text.trim().length === 0 && !category) {
       setStoreResults([]);
       setProductResults([]);
       setHasSearched(false);
@@ -41,19 +58,30 @@ export default function SearchScreen() {
     setHasSearched(true);
 
     try {
+      // Build stores query
+      let storesQuery = supabase.from('stores').select('*').eq('is_active', true);
+      if (text.trim().length > 0) {
+        storesQuery = storesQuery.ilike('name', `%${text}%`);
+      }
+      if (category) {
+        storesQuery = storesQuery.ilike('category', `%${category}%`);
+      }
+
+      // Build products query
+      let productsQuery = supabase
+        .from('products')
+        .select('*, stores(id, name)')
+        .eq('is_available', true);
+      if (text.trim().length > 0) {
+        productsQuery = productsQuery.ilike('name', `%${text}%`);
+      }
+      if (category) {
+        productsQuery = productsQuery.ilike('category', `%${category}%`);
+      }
+
       const [storesRes, productsRes] = await Promise.all([
-        supabase
-          .from('stores')
-          .select('*')
-          .eq('is_active', true)
-          .ilike('name', `%${text}%`)
-          .limit(10),
-        supabase
-          .from('products')
-          .select('*, stores(id, name)')
-          .eq('is_available', true)
-          .ilike('name', `%${text}%`)
-          .limit(20),
+        storesQuery.limit(10),
+        productsQuery.limit(20),
       ]);
 
       setStoreResults(storesRes.data || []);
@@ -69,20 +97,35 @@ export default function SearchScreen() {
     (text: string) => {
       setQuery(text);
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => search(text), 300);
+      debounceRef.current = setTimeout(() => search(text, activeCategory), 300);
     },
-    [search]
+    [search, activeCategory]
   );
+
+  const onSelectCategory = useCallback(
+    (cat: string) => {
+      const next = activeCategory === cat ? null : cat;
+      setActiveCategory(next);
+      search(query, next);
+    },
+    [search, query, activeCategory]
+  );
+
+  // Init from route param
+  useEffect(() => {
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+      search('', categoryParam);
+    } else {
+      const timer = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => inputRef.current?.focus(), 100);
-    return () => clearTimeout(timer);
   }, []);
 
   const totalResults = storeResults.length + productResults.length;
@@ -120,6 +163,33 @@ export default function SearchScreen() {
         </View>
       </View>
 
+      {/* Category pills */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 12 }}
+      >
+        {CATEGORY_LABELS.map((cat) => (
+          <TouchableOpacity
+            key={cat}
+            className={`px-4 py-2 rounded-full border ${
+              activeCategory === cat
+                ? 'bg-papola-blue border-papola-blue'
+                : 'bg-white border-gray-200'
+            }`}
+            onPress={() => onSelectCategory(cat)}
+          >
+            <Text
+              className={`text-xs font-semibold ${
+                activeCategory === cat ? 'text-white' : 'text-gray-600'
+              }`}
+            >
+              {cat}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       {/* Results */}
       {loading ? (
         <View className="flex-1 items-center justify-center">
@@ -136,7 +206,9 @@ export default function SearchScreen() {
         <View className="flex-1 items-center justify-center px-8">
           <Ionicons name="sad-outline" size={48} color="#d1d5db" />
           <Text className="text-gray-400 text-center mt-3 text-base">
-            No se encontraron resultados para "{query}"
+            No se encontraron resultados
+            {query ? ` para "${query}"` : ''}
+            {activeCategory ? ` en ${activeCategory}` : ''}
           </Text>
         </View>
       ) : (
