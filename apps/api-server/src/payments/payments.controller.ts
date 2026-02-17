@@ -1,9 +1,13 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Sse, Param, Req } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { SSEService } from '../common/sse.service';
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(private paymentsService: PaymentsService) {}
+  constructor(
+    private paymentsService: PaymentsService,
+    private sseService: SSEService,
+  ) {}
 
   @Get('exchange-rate')
   getExchangeRate(@Query('pair') pair?: string) {
@@ -21,5 +25,14 @@ export class PaymentsController {
     },
   ) {
     return this.paymentsService.initializePayment(body);
+  }
+
+  @Sse('sse/:orderId')
+  paymentStream(@Param('orderId') orderId: string, @Req() req: any) {
+    req.on('close', () => {
+      this.sseService.removeClient(orderId);
+    });
+
+    return this.sseService.pipeStream(orderId);
   }
 }

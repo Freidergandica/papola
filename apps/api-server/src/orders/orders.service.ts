@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { DealsService } from '../deals/deals.service';
+import { OrderExpirationService } from '../r4-webhooks/order-expiration.service';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private supabase: SupabaseService,
     private dealsService: DealsService,
+    private orderExpirationService: OrderExpirationService,
   ) {}
 
   async create(orderData: {
@@ -18,6 +22,7 @@ export class OrdersService {
     exchange_rate?: number;
     deal_id?: string;
     coupon_code?: string;
+    payment_id_card?: string;
     items: Array<{ product_id: string; quantity: number; unit_price: number }>;
   }) {
     const { items, coupon_code, ...order } = orderData;
@@ -69,6 +74,10 @@ export class OrdersService {
         ? totalAmount * order.exchange_rate
         : undefined;
 
+    // Determine initial status: pago_movil orders start as pending_payment
+    const isPagoMovil = order.payment_method === 'pago_movil';
+    const initialStatus = isPagoMovil ? 'pending_payment' : 'pending';
+
     // Create order
     const { data: createdOrder, error: orderError } = await this.supabase
       .getClient()
@@ -84,7 +93,10 @@ export class OrdersService {
         deal_id: dealId,
         discount_amount: discountAmount,
         total_amount: totalAmount,
-        status: 'pending',
+        status: initialStatus,
+        ...(isPagoMovil && order.payment_id_card
+          ? { payment_id_card: order.payment_id_card }
+          : {}),
       })
       .select()
       .single();
@@ -109,6 +121,12 @@ export class OrdersService {
     // Redeem deal if applied
     if (dealId) {
       await this.dealsService.redeem(dealId, order.customer_id, createdOrder.id);
+    }
+
+    // Schedule expiration for pago_movil orders (5 min timeout)
+    if (isPagoMovil) {
+      this.orderExpirationService.scheduleExpiration(createdOrder.id);
+      this.logger.log(`Order ${createdOrder.id} created as pending_payment with 5min expiration`);
     }
 
     return { ...createdOrder, items: orderItems };

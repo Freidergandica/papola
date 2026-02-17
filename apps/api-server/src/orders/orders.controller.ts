@@ -17,6 +17,7 @@ export class OrdersController {
       exchange_rate?: number;
       deal_id?: string;
       coupon_code?: string;
+      payment_id_card?: string;
       items: Array<{ product_id: string; quantity: number; unit_price: number }>;
     },
   ) {
