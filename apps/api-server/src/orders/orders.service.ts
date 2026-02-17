@@ -17,6 +17,8 @@ export class OrdersService {
     customer_id: string;
     store_id: string;
     delivery_address: string;
+    delivery_latitude?: number;
+    delivery_longitude?: number;
     payment_method: 'c2p' | 'pago_movil' | 'cash';
     payment_currency?: 'USD' | 'VES';
     exchange_rate?: number;
@@ -86,6 +88,8 @@ export class OrdersService {
         customer_id: order.customer_id,
         store_id: order.store_id,
         delivery_address: order.delivery_address,
+        delivery_latitude: order.delivery_latitude ?? null,
+        delivery_longitude: order.delivery_longitude ?? null,
         payment_method: order.payment_method,
         payment_currency: order.payment_currency || 'USD',
         exchange_rate: order.exchange_rate,

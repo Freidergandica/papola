@@ -9,6 +9,9 @@ import { shadowStyles } from '../../styles/shadows';
 
 const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
   pending: { label: 'Pendiente', color: '#eab308', icon: 'time-outline' },
+  pending_payment: { label: 'Esperando pago', color: '#f59e0b', icon: 'hourglass-outline' },
+  authorized: { label: 'Pago detectado', color: '#3b82f6', icon: 'shield-checkmark-outline' },
+  expired: { label: 'Expirado', color: '#ef4444', icon: 'alert-circle-outline' },
   paid: { label: 'Pagado', color: '#3b82f6', icon: 'checkmark-circle-outline' },
   accepted: { label: 'Aceptado', color: '#3b82f6', icon: 'checkmark-circle-outline' },
   preparing: { label: 'Preparando', color: '#f97316', icon: 'restaurant-outline' },
@@ -44,7 +47,7 @@ export default function OrdersScreen() {
         setOrders(data || []);
         // Track the most recent active order
         const activeOrder = data?.find(o =>
-          !['completed', 'cancelled', 'delivered'].includes(o.status)
+          !['completed', 'cancelled', 'delivered', 'expired'].includes(o.status)
         );
         setTrackingOrderId(activeOrder?.id || null);
       }

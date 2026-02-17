@@ -12,6 +12,8 @@ export class OrdersController {
       customer_id: string;
       store_id: string;
       delivery_address: string;
+      delivery_latitude?: number;
+      delivery_longitude?: number;
       payment_method: 'c2p' | 'pago_movil' | 'cash';
       payment_currency?: 'USD' | 'VES';
       exchange_rate?: number;

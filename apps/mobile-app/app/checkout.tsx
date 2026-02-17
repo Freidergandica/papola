@@ -6,6 +6,7 @@ import { router, Stack } from 'expo-router';
 import { useCart } from '../context/CartContext';
 import { useAddress } from '../context/AddressContext';
 import { supabase } from '../lib/supabase';
+import { apiGet, apiPost } from '../lib/api';
 import { shadowStyles } from '../styles/shadows';
 import { AddressPicker } from '../components/AddressPicker';
 
@@ -21,6 +22,7 @@ export default function CheckoutScreen() {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pago_movil');
+  const [cedula, setCedula] = useState('');
   const [exchangeRate, setExchangeRate] = useState<number>(36.5);
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,15 +31,20 @@ export default function CheckoutScreen() {
   }, []);
 
   const fetchExchangeRate = async () => {
-    const { data } = await supabase
-      .from('exchange_rates')
-      .select('rate')
-      .eq('currency_pair', 'USD_VES')
-      .order('fetched_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (data) setExchangeRate(data.rate);
+    try {
+      const data = await apiGet<{ rate: number }>('/payments/exchange-rate');
+      if (data?.rate) setExchangeRate(data.rate);
+    } catch {
+      // Fallback: query Supabase directly
+      const { data } = await supabase
+        .from('exchange_rates')
+        .select('rate')
+        .eq('currency_pair', 'USD_VES')
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data) setExchangeRate(data.rate);
+    }
   };
 
   const handleAddressSelect = useCallback(
@@ -96,6 +103,14 @@ export default function CheckoutScreen() {
       return;
     }
 
+    if (paymentMethod === 'pago_movil') {
+      const trimmed = cedula.trim();
+      if (!/^\d{6,10}$/.test(trimmed)) {
+        Alert.alert('Cédula requerida', 'Ingresa tu cédula (6-10 dígitos) para que el banco pueda verificar tu pago.');
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
@@ -112,9 +127,9 @@ export default function CheckoutScreen() {
         unit_price: item.price,
       }));
 
-      const { data: order, error } = await supabase
-        .from('orders')
-        .insert({
+      if (paymentMethod === 'pago_movil') {
+        // Use API server for pago_movil — handles pending_payment status + expiration timer
+        const order = await apiPost<{ id: string }>('/orders', {
           customer_id: user.id,
           store_id: items[0]?.store_id,
           delivery_address: address,
@@ -123,31 +138,60 @@ export default function CheckoutScreen() {
           payment_method: paymentMethod,
           payment_currency: 'USD',
           exchange_rate: exchangeRate,
-          amount_in_ves: totalVES,
           deal_id: appliedDeal?.id || null,
-          discount_amount: discountAmount,
-          total_amount: finalTotal,
-          status: 'pending',
-        })
-        .select()
-        .single();
+          payment_id_card: cedula.trim(),
+          items: orderItems,
+        });
 
-      if (error) throw error;
+        clearCart();
+        router.replace({
+          pathname: '/payment-waiting',
+          params: {
+            orderId: order.id,
+            amountVes: totalVES.toFixed(2),
+            cedula: cedula.trim(),
+            totalUsd: finalTotal.toFixed(2),
+            exchangeRate: String(exchangeRate),
+          },
+        });
+      } else {
+        // Cash / C2P — insert directly to Supabase (existing flow)
+        const { data: order, error } = await supabase
+          .from('orders')
+          .insert({
+            customer_id: user.id,
+            store_id: items[0]?.store_id,
+            delivery_address: address,
+            delivery_latitude: deliveryCoords?.latitude ?? null,
+            delivery_longitude: deliveryCoords?.longitude ?? null,
+            payment_method: paymentMethod,
+            payment_currency: 'USD',
+            exchange_rate: exchangeRate,
+            amount_in_ves: totalVES,
+            deal_id: appliedDeal?.id || null,
+            discount_amount: discountAmount,
+            total_amount: finalTotal,
+            status: 'pending',
+          })
+          .select()
+          .single();
 
-      // Insert order items
-      const itemsToInsert = orderItems.map(item => ({
-        order_id: order.id,
-        ...item,
-      }));
+        if (error) throw error;
 
-      await supabase.from('order_items').insert(itemsToInsert);
+        const itemsToInsert = orderItems.map(item => ({
+          order_id: order.id,
+          ...item,
+        }));
 
-      clearCart();
-      Alert.alert(
-        'Pedido realizado',
-        'Tu pedido ha sido creado exitosamente. Recibirás actualizaciones sobre su estado.',
-        [{ text: 'Ver mis pedidos', onPress: () => router.replace('/(tabs)/orders') }],
-      );
+        await supabase.from('order_items').insert(itemsToInsert);
+
+        clearCart();
+        Alert.alert(
+          'Pedido realizado',
+          'Tu pedido ha sido creado exitosamente. Recibirás actualizaciones sobre su estado.',
+          [{ text: 'Ver mis pedidos', onPress: () => router.replace('/(tabs)/orders') }],
+        );
+      }
     } catch (error) {
       console.error('Order error:', error);
       Alert.alert('Error', 'No se pudo crear el pedido. Intenta de nuevo.');
@@ -264,6 +308,24 @@ export default function CheckoutScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+
+            {/* Cedula for Pago Movil */}
+            {paymentMethod === 'pago_movil' && (
+              <View className="mb-6">
+                <Text className="text-sm font-bold text-gray-900 mb-2">Cédula del pagador</Text>
+                <TextInput
+                  className="border border-gray-300 rounded-xl px-4 py-3 text-sm"
+                  placeholder="Ej: 12345678"
+                  value={cedula}
+                  onChangeText={(text) => setCedula(text.replace(/[^0-9]/g, '').slice(0, 10))}
+                  keyboardType="numeric"
+                  maxLength={10}
+                />
+                <Text className="text-[10px] text-gray-400 mt-1">
+                  Requerida para que el banco verifique tu Pago Móvil
+                </Text>
+              </View>
+            )}
 
             {/* Price Display */}
             <View className="bg-gray-50 rounded-2xl p-4 mb-6">

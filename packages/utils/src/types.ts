@@ -58,6 +58,8 @@ export interface Order {
   currency?: string;
   status:
     | 'pending'
+    | 'pending_payment'
+    | 'authorized'
     | 'paid'
     | 'accepted'
     | 'preparing'
@@ -75,6 +77,7 @@ export interface Order {
   payment_currency?: 'USD' | 'VES';
   exchange_rate?: number;
   amount_in_ves?: number;
+  payment_id_card?: string;
   deal_id?: string;
   discount_amount?: number;
   delivery_address?: string;
