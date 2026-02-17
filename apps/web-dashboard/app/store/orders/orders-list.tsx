@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Package, Clock, CheckCircle, Truck } from 'lucide-react'
+import { Package, Clock, CheckCircle, Truck, AlertCircle, ShieldCheck, Banknote, Smartphone } from 'lucide-react'
 import { useNewOrders } from '@/hooks/useNewOrders'
 
 interface Order {
@@ -26,6 +26,8 @@ interface Order {
 
 const statusLabels: Record<string, { label: string; color: string; icon: typeof Package }> = {
   pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
+  pending_payment: { label: 'Esperando Pago', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
+  authorized: { label: 'Pago Autorizado', color: 'bg-indigo-100 text-indigo-700', icon: ShieldCheck },
   paid: { label: 'Pagado', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
   accepted: { label: 'Aceptado', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
   preparing: { label: 'Preparando', color: 'bg-orange-100 text-orange-700', icon: Package },
@@ -35,6 +37,13 @@ const statusLabels: Record<string, { label: string; color: string; icon: typeof 
   delivered: { label: 'Entregado', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   completed: { label: 'Completado', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700', icon: Package },
+  expired: { label: 'Expirado', color: 'bg-red-100 text-red-700', icon: AlertCircle },
+}
+
+const paymentMethodLabels: Record<string, { label: string; icon: typeof Package }> = {
+  pago_movil: { label: 'Pago Móvil', icon: Smartphone },
+  cash: { label: 'Efectivo', icon: Banknote },
+  c2p: { label: 'C2P', icon: Smartphone },
 }
 
 const nextStatus: Record<string, string> = {
@@ -56,10 +65,18 @@ export default function StoreOrdersList({
   const [orders, setOrders] = useState<Order[]>(initialOrders)
   const supabase = createClient()
 
-  // Realtime: listen for new orders
-  useNewOrders(storeId, (newOrder) => {
-    setOrders(prev => [newOrder, ...prev])
-  })
+  // Realtime: listen for new orders and updates
+  useNewOrders(
+    storeId,
+    (newOrder) => {
+      setOrders(prev => [newOrder, ...prev])
+    },
+    (updatedOrder) => {
+      setOrders(prev =>
+        prev.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+      )
+    },
+  )
 
   const advanceStatus = async (orderId: string, currentStatus: string) => {
     const next = nextStatus[currentStatus]
@@ -103,6 +120,16 @@ export default function StoreOrdersList({
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {statusInfo.label}
                     </span>
+                    {order.payment_method && paymentMethodLabels[order.payment_method] && (() => {
+                      const pm = paymentMethodLabels[order.payment_method!]
+                      const PmIcon = pm.icon
+                      return (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          <PmIcon className="h-3 w-3 mr-1" />
+                          {pm.label}
+                        </span>
+                      )
+                    })()}
                     <span className="text-xs text-gray-400">
                       {new Date(order.created_at).toLocaleString('es')}
                     </span>

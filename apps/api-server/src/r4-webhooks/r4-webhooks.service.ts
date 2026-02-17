@@ -105,6 +105,11 @@ export class R4WebhooksService {
       `R4notifica — IdComercio: ${data.IdComercio}, Referencia: ${data.Referencia}, CodigoRed: ${data.CodigoRed}`,
     );
 
+    if (data.CodigoRed !== '00') {
+      this.logger.warn(`R4notifica — CodigoRed no aprobado: ${data.CodigoRed}`);
+      return { abono: false };
+    }
+
     const supabase = this.supabase.getClient();
 
     // 1. Find authorized orders by payment_id_card (IdComercio) + status
