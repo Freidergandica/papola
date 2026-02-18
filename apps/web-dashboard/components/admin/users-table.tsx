@@ -59,11 +59,15 @@ export default function UsersTable({
   const handleApprove = async (userId: string) => {
     setChangingRole(userId)
     setErrorMsg(null)
-    const result = await approveStoreOwner(userId)
-    if (result.error) {
-      setErrorMsg(`Error al aprobar: ${result.error}`)
-    } else {
-      router.refresh()
+    try {
+      const result = await approveStoreOwner(userId)
+      if (result.error) {
+        setErrorMsg(`Error al aprobar: ${result.error}`)
+      } else {
+        router.refresh()
+      }
+    } catch (e) {
+      setErrorMsg(`Excepción al aprobar: ${e instanceof Error ? e.message : String(e)}`)
     }
     setChangingRole(null)
   }
@@ -71,11 +75,15 @@ export default function UsersTable({
   const handleReject = async (userId: string) => {
     setChangingRole(userId)
     setErrorMsg(null)
-    const result = await rejectStoreOwner(userId)
-    if (result.error) {
-      setErrorMsg(`Error al rechazar: ${result.error}`)
-    } else {
-      router.refresh()
+    try {
+      const result = await rejectStoreOwner(userId)
+      if (result.error) {
+        setErrorMsg(`Error al rechazar: ${result.error}`)
+      } else {
+        router.refresh()
+      }
+    } catch (e) {
+      setErrorMsg(`Excepción al rechazar: ${e instanceof Error ? e.message : String(e)}`)
     }
     setChangingRole(null)
   }
@@ -83,11 +91,15 @@ export default function UsersTable({
   const handleChangeRole = async (userId: string, newRole: string) => {
     setChangingRole(userId)
     setErrorMsg(null)
-    const result = await changeUserRole(userId, newRole)
-    if (result.error) {
-      setErrorMsg(`Error al cambiar rol: ${result.error}`)
-    } else {
-      router.refresh()
+    try {
+      const result = await changeUserRole(userId, newRole)
+      if (result.error) {
+        setErrorMsg(`Error al cambiar rol: ${result.error}`)
+      } else {
+        router.refresh()
+      }
+    } catch (e) {
+      setErrorMsg(`Excepción al cambiar rol: ${e instanceof Error ? e.message : String(e)}`)
     }
     setChangingRole(null)
   }

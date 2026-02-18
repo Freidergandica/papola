@@ -20,64 +20,73 @@ async function assertAdmin() {
 }
 
 export async function approveStoreOwner(userId: string): Promise<{ error?: string }> {
-  await assertAdmin()
-  const admin = createAdminClient()
+  try {
+    await assertAdmin()
+    const admin = createAdminClient()
 
-  // 1. Cambiar rol a store_owner
-  const { error: roleError } = await admin
-    .from('profiles')
-    .update({ role: 'store_owner' })
-    .eq('id', userId)
+    const { error: roleError } = await admin
+      .from('profiles')
+      .update({ role: 'store_owner' })
+      .eq('id', userId)
 
-  if (roleError) {
-    return { error: roleError.message }
+    if (roleError) return { error: roleError.message }
+
+    const { error: storeError } = await admin
+      .from('stores')
+      .update({ is_active: true })
+      .eq('owner_id', userId)
+
+    if (storeError) return { error: storeError.message }
+
+    revalidatePath('/admin/users')
+    revalidatePath('/admin/stores')
+    return {}
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    // re-throw Next.js redirects
+    if (msg.includes('NEXT_REDIRECT')) throw e
+    return { error: msg }
   }
-
-  // 2. Activar su tienda (si tiene una)
-  const { error: storeError } = await admin
-    .from('stores')
-    .update({ is_active: true })
-    .eq('owner_id', userId)
-
-  if (storeError) {
-    return { error: storeError.message }
-  }
-
-  revalidatePath('/admin/users')
-  revalidatePath('/admin/stores')
-  return {}
 }
 
 export async function rejectStoreOwner(userId: string): Promise<{ error?: string }> {
-  await assertAdmin()
-  const admin = createAdminClient()
+  try {
+    await assertAdmin()
+    const admin = createAdminClient()
 
-  const { error } = await admin
-    .from('profiles')
-    .update({ role: 'customer' })
-    .eq('id', userId)
+    const { error } = await admin
+      .from('profiles')
+      .update({ role: 'customer' })
+      .eq('id', userId)
 
-  if (error) {
-    return { error: error.message }
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/users')
+    return {}
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (msg.includes('NEXT_REDIRECT')) throw e
+    return { error: msg }
   }
-
-  revalidatePath('/admin/users')
-  return {}
 }
 
 export async function changeUserRole(userId: string, newRole: string): Promise<{ error?: string }> {
-  await assertAdmin()
-  const admin = createAdminClient()
+  try {
+    await assertAdmin()
+    const admin = createAdminClient()
 
-  const { error } = await admin
-    .from('profiles')
-    .update({ role: newRole })
-    .eq('id', userId)
+    const { error } = await admin
+      .from('profiles')
+      .update({ role: newRole })
+      .eq('id', userId)
 
-  if (error) {
-    return { error: error.message }
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/users')
+    return {}
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (msg.includes('NEXT_REDIRECT')) throw e
+    return { error: msg }
   }
-
-  revalidatePath('/admin/users')
-  return {}
 }
