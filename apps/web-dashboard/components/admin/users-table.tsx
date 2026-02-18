@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Search, Shield, Store, User, ChevronDown, Clock, Check, X } from 'lucide-react'
+import { Search, Shield, Store, User, ChevronDown, Clock, Check, X, AlertCircle } from 'lucide-react'
+import { approveStoreOwner, rejectStoreOwner, changeUserRole } from '@/app/admin/users/actions'
 
 interface UserProfile {
   id: string
@@ -41,8 +41,8 @@ export default function UsersTable({
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [changingRole, setChangingRole] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const filtered = users.filter((user) => {
     const matchesSearch =
@@ -56,14 +56,37 @@ export default function UsersTable({
     return matchesSearch && matchesRole
   })
 
-  const changeRole = async (userId: string, newRole: string) => {
+  const handleApprove = async (userId: string) => {
     setChangingRole(userId)
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: newRole })
-      .eq('id', userId)
+    setErrorMsg(null)
+    const result = await approveStoreOwner(userId)
+    if (result.error) {
+      setErrorMsg(`Error al aprobar: ${result.error}`)
+    } else {
+      router.refresh()
+    }
+    setChangingRole(null)
+  }
 
-    if (!error) {
+  const handleReject = async (userId: string) => {
+    setChangingRole(userId)
+    setErrorMsg(null)
+    const result = await rejectStoreOwner(userId)
+    if (result.error) {
+      setErrorMsg(`Error al rechazar: ${result.error}`)
+    } else {
+      router.refresh()
+    }
+    setChangingRole(null)
+  }
+
+  const handleChangeRole = async (userId: string, newRole: string) => {
+    setChangingRole(userId)
+    setErrorMsg(null)
+    const result = await changeUserRole(userId, newRole)
+    if (result.error) {
+      setErrorMsg(`Error al cambiar rol: ${result.error}`)
+    } else {
       router.refresh()
     }
     setChangingRole(null)
@@ -71,6 +94,13 @@ export default function UsersTable({
 
   return (
     <div>
+      {errorMsg && (
+        <div className="flex items-center gap-2 mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          {errorMsg}
+        </div>
+      )}
+
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
@@ -186,7 +216,7 @@ export default function UsersTable({
                       ) : user.role === 'pending_store_owner' ? (
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => changeRole(user.id, 'store_owner')}
+                            onClick={() => handleApprove(user.id)}
                             disabled={changingRole === user.id}
                             className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
                           >
@@ -194,7 +224,7 @@ export default function UsersTable({
                             Aprobar
                           </button>
                           <button
-                            onClick={() => changeRole(user.id, 'customer')}
+                            onClick={() => handleReject(user.id)}
                             disabled={changingRole === user.id}
                             className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50 transition-colors"
                           >
@@ -206,7 +236,7 @@ export default function UsersTable({
                         <div className="relative">
                           <select
                             value={user.role}
-                            onChange={(e) => changeRole(user.id, e.target.value)}
+                            onChange={(e) => handleChangeRole(user.id, e.target.value)}
                             disabled={changingRole === user.id}
                             className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium border border-gray-200 rounded-lg bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 disabled:opacity-50 cursor-pointer"
                           >
