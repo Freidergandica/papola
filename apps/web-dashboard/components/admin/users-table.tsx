@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Shield, Store, User, ChevronDown, Clock, Check, X, AlertCircle } from 'lucide-react'
-import { approveStoreOwner, rejectStoreOwner, changeUserRole } from '@/app/admin/users/actions'
+import { Search, Shield, Store, User, ChevronDown, Clock, Check, X, AlertCircle, Trash2 } from 'lucide-react'
+import { approveStoreOwner, rejectStoreOwner, changeUserRole, deleteUser } from '@/app/admin/users/actions'
 
 interface UserProfile {
   id: string
@@ -41,6 +41,8 @@ export default function UsersTable({
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [changingRole, setChangingRole] = useState<string | null>(null)
+  const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const router = useRouter()
 
@@ -86,6 +88,23 @@ export default function UsersTable({
       setErrorMsg(`Excepción al rechazar: ${e instanceof Error ? e.message : String(e)}`)
     }
     setChangingRole(null)
+  }
+
+  const handleDelete = async (userId: string) => {
+    setDeletingUser(userId)
+    setConfirmDelete(null)
+    setErrorMsg(null)
+    try {
+      const result = await deleteUser(userId)
+      if (result.error) {
+        setErrorMsg(`Error al eliminar: ${result.error}`)
+      } else {
+        router.refresh()
+      }
+    } catch (e) {
+      setErrorMsg(`Excepción al eliminar: ${e instanceof Error ? e.message : String(e)}`)
+    }
+    setDeletingUser(null)
   }
 
   const handleChangeRole = async (userId: string, newRole: string) => {
@@ -225,39 +244,72 @@ export default function UsersTable({
                     <td className="px-6 py-4 whitespace-nowrap">
                       {isSelf ? (
                         <span className="text-xs text-gray-400">—</span>
-                      ) : user.role === 'pending_store_owner' ? (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleApprove(user.id)}
-                            disabled={changingRole === user.id}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
-                          >
-                            <Check className="h-3 w-3" />
-                            Aprobar
-                          </button>
-                          <button
-                            onClick={() => handleReject(user.id)}
-                            disabled={changingRole === user.id}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                            Rechazar
-                          </button>
-                        </div>
                       ) : (
-                        <div className="relative">
-                          <select
-                            value={user.role}
-                            onChange={(e) => handleChangeRole(user.id, e.target.value)}
-                            disabled={changingRole === user.id}
-                            className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium border border-gray-200 rounded-lg bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 disabled:opacity-50 cursor-pointer"
-                          >
-                            <option value="customer">Cliente</option>
-                            <option value="store_owner">Comercio</option>
-                            <option value="admin">Admin</option>
-                            <option value="driver">Repartidor</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {user.role === 'pending_store_owner' ? (
+                            <>
+                              <button
+                                onClick={() => handleApprove(user.id)}
+                                disabled={changingRole === user.id}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
+                              >
+                                <Check className="h-3 w-3" />
+                                Aprobar
+                              </button>
+                              <button
+                                onClick={() => handleReject(user.id)}
+                                disabled={changingRole === user.id}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50 transition-colors"
+                              >
+                                <X className="h-3 w-3" />
+                                Rechazar
+                              </button>
+                            </>
+                          ) : (
+                            <div className="relative">
+                              <select
+                                value={user.role}
+                                onChange={(e) => handleChangeRole(user.id, e.target.value)}
+                                disabled={changingRole === user.id}
+                                className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium border border-gray-200 rounded-lg bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 disabled:opacity-50 cursor-pointer"
+                              >
+                                <option value="customer">Cliente</option>
+                                <option value="store_owner">Comercio</option>
+                                <option value="admin">Admin</option>
+                                <option value="driver">Repartidor</option>
+                              </select>
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                            </div>
+                          )}
+
+                          {/* Botón eliminar con confirmación inline */}
+                          {confirmDelete === user.id ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-red-600 font-medium">¿Eliminar?</span>
+                              <button
+                                onClick={() => handleDelete(user.id)}
+                                disabled={deletingUser === user.id}
+                                className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50 transition-colors"
+                              >
+                                Sí
+                              </button>
+                              <button
+                                onClick={() => setConfirmDelete(null)}
+                                className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDelete(user.id)}
+                              disabled={deletingUser === user.id}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Eliminar usuario"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>

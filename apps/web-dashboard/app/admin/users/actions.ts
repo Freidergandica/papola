@@ -90,3 +90,31 @@ export async function changeUserRole(userId: string, newRole: string): Promise<{
     return { error: msg }
   }
 }
+
+export async function deleteUser(userId: string): Promise<{ error?: string }> {
+  try {
+    await assertAdmin()
+    const admin = createAdminClient()
+
+    // 1. Eliminar tiendas del usuario primero
+    const { error: storeError } = await admin
+      .from('stores')
+      .delete()
+      .eq('owner_id', userId)
+
+    if (storeError) return { error: storeError.message }
+
+    // 2. Eliminar el usuario de auth (esto hace cascade a profiles)
+    const { error: authError } = await admin.auth.admin.deleteUser(userId)
+
+    if (authError) return { error: authError.message }
+
+    revalidatePath('/admin/users')
+    revalidatePath('/admin/stores')
+    return {}
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (msg.includes('NEXT_REDIRECT')) throw e
+    return { error: msg }
+  }
+}
