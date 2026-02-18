@@ -17,6 +17,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [waitingForOtp, setWaitingForOtp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
 
   // Splash animation values (built-in Animated API)
@@ -240,13 +241,22 @@ export default function LoginScreen() {
                 </View>
                 <View>
                   <Text className="text-gray-700 font-medium mb-2 ml-1">Contraseña</Text>
-                  <TextInput
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-gray-800 text-base"
-                    placeholder="••••••••"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                  />
+                  <View style={{ position: 'relative' }}>
+                    <TextInput
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-gray-800 text-base"
+                      style={{ paddingRight: 48 }}
+                      placeholder="••••••••"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={{ position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' }}
+                    >
+                      <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={18} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <TouchableOpacity
                   className="bg-papola-blue py-4 rounded-2xl items-center mt-2"
