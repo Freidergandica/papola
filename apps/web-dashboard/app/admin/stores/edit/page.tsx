@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Save } from 'lucide-react'
+import { ChevronLeft, Save, Landmark } from 'lucide-react'
 import { STORE_CATEGORIES } from '@/lib/categories'
 
 export default async function EditStorePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -189,6 +189,36 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
               className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white"
             />
           </div>
+        </div>
+
+        {/* Datos Bancarios (read-only) */}
+        <div className="pt-4 border-t border-gray-100">
+          <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2 mb-4">
+            <Landmark className="h-4 w-4 text-papola-blue" />
+            Datos Bancarios
+          </h3>
+          {store.bank_name ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Banco</dt>
+                <dd className="mt-1 text-sm text-gray-900">{store.bank_name}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Tipo de Cuenta</dt>
+                <dd className="mt-1 text-sm text-gray-900 capitalize">{store.bank_account_type || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Número de Cuenta</dt>
+                <dd className="mt-1 text-sm text-gray-900 font-mono">{store.bank_account_number || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Cédula del Titular</dt>
+                <dd className="mt-1 text-sm text-gray-900">{store.bank_account_holder_id || '-'}</dd>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 italic">Sin datos bancarios registrados.</p>
+          )}
         </div>
 
         <div className="pt-4 border-t border-gray-100 flex justify-end">

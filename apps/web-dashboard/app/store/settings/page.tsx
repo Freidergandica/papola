@@ -23,6 +23,16 @@ export default async function SettingsPage() {
     )
   }
 
+  // Fetch pending bank change request
+  const { data: pendingBankChange } = await supabase
+    .from('bank_account_changes')
+    .select('id, status, new_bank_name, new_account_number, new_account_holder_id, new_account_type, created_at')
+    .eq('store_id', store.id)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
@@ -32,7 +42,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <StoreSettingsForm store={store} />
+      <StoreSettingsForm store={store} pendingBankChange={pendingBankChange} />
     </div>
   )
 }

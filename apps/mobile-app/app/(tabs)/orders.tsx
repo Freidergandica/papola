@@ -2,10 +2,13 @@ import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { Order } from '../../types';
-import { useOrderUpdates } from '../../hooks/useOrderUpdates';
+import { useActiveOrdersUpdates } from '../../hooks/useActiveOrdersUpdates';
 import { shadowStyles } from '../../styles/shadows';
+
+const TERMINAL_STATUSES = ['completed', 'cancelled', 'canceled', 'delivered', 'expired'];
 
 const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
   pending: { label: 'Pendiente', color: '#eab308', icon: 'time-outline' },
@@ -27,7 +30,7 @@ export default function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     try {
@@ -37,6 +40,8 @@ export default function OrdersScreen() {
         return;
       }
 
+      setUserId(user.id);
+
       const { data, error } = await supabase
         .from('orders')
         .select('*, stores(id, name, logo_url), order_items(*, products(name, image_url))')
@@ -45,11 +50,6 @@ export default function OrdersScreen() {
 
       if (!error) {
         setOrders(data || []);
-        // Track the most recent active order
-        const activeOrder = data?.find(o =>
-          !['completed', 'cancelled', 'delivered', 'expired'].includes(o.status)
-        );
-        setTrackingOrderId(activeOrder?.id || null);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -63,14 +63,14 @@ export default function OrdersScreen() {
     fetchOrders();
   }, []);
 
-  // Realtime order status updates
-  const handleStatusChange = useCallback((newStatus: string) => {
+  // Real-time updates for ALL customer orders
+  const handleOrderUpdate = useCallback((orderId: string, updatedFields: Record<string, unknown>) => {
     setOrders(prev =>
-      prev.map(o => o.id === trackingOrderId ? { ...o, status: newStatus as Order['status'] } : o)
+      prev.map(o => o.id === orderId ? { ...o, ...updatedFields } : o)
     );
-  }, [trackingOrderId]);
+  }, []);
 
-  useOrderUpdates(trackingOrderId, handleStatusChange);
+  useActiveOrdersUpdates(userId, handleOrderUpdate);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -94,7 +94,7 @@ export default function OrdersScreen() {
           </View>
           <Text className="text-xl font-bold text-gray-900 text-center">Sin pedidos</Text>
           <Text className="text-gray-500 text-center mt-2">
-            Tus pedidos aparecerán aquí.
+            Tus pedidos apareceran aqui.
           </Text>
         </View>
       ) : (
@@ -107,16 +107,22 @@ export default function OrdersScreen() {
           }
           renderItem={({ item: order }) => {
             const status = statusConfig[order.status] || statusConfig.pending;
+            const isActive = !TERMINAL_STATUSES.includes(order.status);
             return (
-              <View className="bg-white rounded-2xl border border-gray-100 mb-4 p-4" style={shadowStyles.sm}>
+              <TouchableOpacity
+                className="bg-white rounded-2xl border border-gray-100 mb-4 p-4"
+                style={shadowStyles.sm}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/order/${order.id}`)}
+              >
                 {/* Header */}
                 <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center">
+                  <View className="flex-row items-center flex-1">
                     <Ionicons name={status.icon as any} size={18} color={status.color} />
                     <Text style={{ color: status.color }} className="ml-1 text-sm font-bold">
                       {status.label}
                     </Text>
-                    {trackingOrderId === order.id && (
+                    {isActive && (
                       <View className="ml-2 bg-papola-blue-20 rounded-full px-2 py-0.5">
                         <Text className="text-papola-blue text-[10px] font-bold">EN VIVO</Text>
                       </View>
@@ -141,18 +147,21 @@ export default function OrdersScreen() {
                   </Text>
                 ))}
 
-                {/* Total */}
+                {/* Total + chevron */}
                 <View className="flex-row items-center justify-between mt-3 pt-3 border-t border-gray-100">
                   <Text className="text-lg font-bold text-papola-blue">
                     ${order.total_amount.toFixed(2)}
                   </Text>
-                  {order.discount_amount && order.discount_amount > 0 && (
-                    <Text className="text-xs text-green-600">
-                      Ahorraste ${order.discount_amount.toFixed(2)}
-                    </Text>
-                  )}
+                  <View className="flex-row items-center">
+                    {order.discount_amount && order.discount_amount > 0 ? (
+                      <Text className="text-xs text-green-600 mr-2">
+                        Ahorraste ${order.discount_amount.toFixed(2)}
+                      </Text>
+                    ) : null}
+                    <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           }}
         />

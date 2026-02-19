@@ -41,8 +41,11 @@ export default async function StoreDashboard() {
     .select('*', { count: 'exact', head: true })
     .eq('store_id', store.id)
 
-  // Mock orders count for now as we don't have orders fully linked yet
-  const ordersCount = 0 
+  const { count: ordersCount } = await supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('store_id', store.id)
+    .not('status', 'in', '("completed","cancelled","canceled","delivered","expired")')
 
   return (
     <div className="space-y-6">

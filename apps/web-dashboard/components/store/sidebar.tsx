@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Settings, Store, LogOut, Package, Tag } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Settings, Store, LogOut, Package, Tag, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Productos', href: '/store/products', icon: Package },
   { name: 'Ofertas', href: '/store/deals', icon: Tag },
   { name: 'Pedidos', href: '/store/orders', icon: ShoppingBag },
+  { name: 'Soporte', href: '/store/support', icon: MessageCircle },
   { name: 'Mi Negocio', href: '/store/settings', icon: Store },
 ]
 

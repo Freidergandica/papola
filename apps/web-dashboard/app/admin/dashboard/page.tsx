@@ -19,10 +19,10 @@ export default async function AdminDashboard() {
 
   const admin = createAdminClient()
 
-  // Fetch all orders with store name
-  const { data: allOrders } = await supabase
+  // Fetch all orders with store name and customer name (admin bypasses RLS on profiles)
+  const { data: allOrders } = await admin
     .from('orders')
-    .select('id, total_amount, created_at, store_id, status, stores(name)')
+    .select('id, total_amount, created_at, store_id, customer_id, status, amount_in_ves, exchange_rate, payment_currency, stores(name), profiles!customer_id(full_name, email)')
 
   // Fetch all profiles (admin client bypasses RLS)
   const { data: allProfiles } = await admin
@@ -36,18 +36,18 @@ export default async function AdminDashboard() {
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true)
 
-  // Stores list (active)
-  const { data: storesList } = await supabase
+  // Stores list (all, for expandable card + dispersable)
+  const { data: storesList } = await admin
     .from('stores')
-    .select('id, name, is_active')
-    .eq('is_active', true)
+    .select('id, name, is_active, category, created_at, bank_name, bank_account_number, bank_account_holder_id, bank_account_type')
     .order('name')
 
   return (
     <DashboardContent
       orders={(allOrders || []).map(o => ({
         ...o,
-        stores: o.stores as unknown as { name: string } | undefined
+        stores: o.stores as unknown as { name: string } | undefined,
+        customer: o.profiles as unknown as { full_name: string | null; email: string } | undefined,
       }))}
       profiles={allProfiles || []}
       storesCount={storesCount || 0}

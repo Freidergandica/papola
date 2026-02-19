@@ -28,8 +28,31 @@ export interface Store {
   delivery_time_max?: number;
   latitude?: number;
   longitude?: number;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_holder_id?: string;
+  bank_account_type?: 'corriente' | 'ahorro';
   is_active: boolean;
   created_at?: string;
+}
+
+export interface BankAccountChange {
+  id: string;
+  store_id: string;
+  requested_by: string;
+  new_bank_name: string;
+  new_account_number: string;
+  new_account_holder_id: string;
+  new_account_type: 'corriente' | 'ahorro';
+  old_bank_name?: string;
+  old_account_number?: string;
+  old_account_holder_id?: string;
+  old_account_type?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+  stores?: { name: string };
 }
 
 export interface Product {

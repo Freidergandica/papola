@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminOrdersTable from '@/components/admin/orders-table'
 import { DollarSign, ShoppingBag, Clock, CheckCircle } from 'lucide-react'
@@ -17,8 +18,11 @@ export default async function AdminOrdersPage() {
 
   if (profile?.role !== 'admin') redirect('/login')
 
+  // Use admin client to bypass RLS and see all customer profiles
+  const admin = createAdminClient()
+
   // Fetch all orders with store and customer info
-  const { data: orders } = await supabase
+  const { data: orders } = await admin
     .from('orders')
     .select(`
       *,
@@ -29,7 +33,7 @@ export default async function AdminOrdersPage() {
     .order('created_at', { ascending: false })
 
   // Fetch all stores for filter dropdown
-  const { data: stores } = await supabase
+  const { data: stores } = await admin
     .from('stores')
     .select('id, name')
     .order('name')

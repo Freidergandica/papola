@@ -78,6 +78,12 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- Service role key (backend/admin client): auth.uid() = NULL → allow
+  -- Only JWTs de usuarios tienen uid; la service role no envía JWT de usuario
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
   -- Check if the caller is an admin
   SELECT role INTO _caller_role
   FROM public.profiles

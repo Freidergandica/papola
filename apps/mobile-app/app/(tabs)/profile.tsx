@@ -14,7 +14,7 @@ const MENU_ITEMS: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress
   { icon: 'person-outline', label: 'Perfil', onPress: () => router.push('/profile-edit') },
   { icon: 'location-outline', label: 'Mis direcciones', onPress: () => router.push('/addresses') },
   { icon: 'receipt-outline', label: 'Historial de mis órdenes', onPress: () => router.push('/(tabs)/orders') },
-  { icon: 'help-circle-outline', label: 'Ayuda', onPress: comingSoon },
+  { icon: 'headset-outline', label: 'Soporte', onPress: () => router.push('/support') },
   { icon: 'document-text-outline', label: 'Políticas de privacidad', onPress: comingSoon },
 ];
 

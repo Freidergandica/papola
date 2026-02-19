@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Store, User, Lock, MapPin, ArrowRight, FileText, Phone, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Store, User, Lock, MapPin, ArrowRight, FileText, Phone, Eye, EyeOff, Landmark } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { VENEZUELAN_BANKS } from '@/lib/banks'
 
 export default function RegisterStorePage() {
   const [step, setStep] = useState(1) // 1: Usuario, 2: Tienda
@@ -23,6 +24,10 @@ export default function RegisterStorePage() {
   const [storeDescription, setStoreDescription] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [bankName, setBankName] = useState('')
+  const [bankAccountNumber, setBankAccountNumber] = useState('')
+  const [bankAccountHolderId, setBankAccountHolderId] = useState('')
+  const [bankAccountType, setBankAccountType] = useState<'corriente' | 'ahorro'>('corriente')
 
   const router = useRouter()
   const supabase = createClient()
@@ -46,6 +51,17 @@ export default function RegisterStorePage() {
     setLoading(true)
     setError(null)
 
+    if (bankAccountNumber.length !== 20) {
+      setError('El número de cuenta debe tener exactamente 20 dígitos')
+      setLoading(false)
+      return
+    }
+    if (!bankName) {
+      setError('Debes seleccionar un banco')
+      setLoading(false)
+      return
+    }
+
     try {
       // 1. Crear Usuario con metadata (signup_type en vez de role)
       // El trigger handle_new_user() asignará pending_store_owner automáticamente
@@ -62,6 +78,10 @@ export default function RegisterStorePage() {
             store_phone: storePhone,
             store_address: storeAddress,
             store_description: storeDescription,
+            store_bank_name: bankName,
+            store_bank_account_number: bankAccountNumber,
+            store_bank_account_holder_id: bankAccountHolderId,
+            store_bank_account_type: bankAccountType,
           }
         }
       })
@@ -96,7 +116,11 @@ export default function RegisterStorePage() {
           description: storeDescription,
           address: storeAddress,
           is_active: false,
-          rating: 5.0
+          rating: 5.0,
+          bank_name: bankName,
+          bank_account_number: bankAccountNumber,
+          bank_account_holder_id: bankAccountHolderId,
+          bank_account_type: bankAccountType,
         })
 
       if (storeError) {
@@ -317,6 +341,76 @@ export default function RegisterStorePage() {
                     className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg p-3 text-gray-900 bg-white placeholder-gray-400"
                     placeholder="Vendemos ropa, accesorios, tecnología o comida con los mejores descuentos..."
                   />
+                </div>
+
+                {/* Divider - Datos Bancarios */}
+                <div className="relative py-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="px-2 bg-white text-gray-400">Datos Bancarios</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Banco</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Landmark className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      required
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      className="focus:ring-papola-blue focus:border-papola-blue block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-3 text-gray-900 bg-white"
+                    >
+                      <option value="">Seleccionar banco</option>
+                      {VENEZUELAN_BANKS.map((bank) => (
+                        <option key={bank.code} value={bank.name}>{bank.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Número de Cuenta</label>
+                  <input
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    maxLength={20}
+                    value={bankAccountNumber}
+                    onChange={(e) => setBankAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 20))}
+                    className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg py-3 px-3 text-gray-900 bg-white placeholder-gray-400 font-mono"
+                    placeholder="01340000000000000000"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">{bankAccountNumber.length}/20 dígitos</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Cédula del Titular</label>
+                  <input
+                    type="text"
+                    required
+                    value={bankAccountHolderId}
+                    onChange={(e) => setBankAccountHolderId(e.target.value)}
+                    className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg py-3 px-3 text-gray-900 bg-white placeholder-gray-400"
+                    placeholder="V-12345678"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipo de Cuenta</label>
+                  <select
+                    required
+                    value={bankAccountType}
+                    onChange={(e) => setBankAccountType(e.target.value as 'corriente' | 'ahorro')}
+                    className="mt-1 focus:ring-papola-blue focus:border-papola-blue block w-full sm:text-sm border-gray-300 rounded-lg py-3 px-3 text-gray-900 bg-white"
+                  >
+                    <option value="corriente">Corriente</option>
+                    <option value="ahorro">Ahorro</option>
+                  </select>
                 </div>
 
                 <div className="flex gap-3">

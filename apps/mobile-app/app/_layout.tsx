@@ -14,7 +14,10 @@ export default function Layout() {
           <Stack.Screen name="store/[id]" />
           <Stack.Screen name="cart" options={{ presentation: 'modal' }} />
           <Stack.Screen name="checkout" />
+          <Stack.Screen name="order/[id]" />
           <Stack.Screen name="payment-waiting" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="support/index" />
+          <Stack.Screen name="support/[id]" />
         </Stack>
       </AddressProvider>
     </CartProvider>
