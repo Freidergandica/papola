@@ -12,7 +12,7 @@ const navigation = [
   { name: 'Productos', href: '/store/products', icon: Package },
   { name: 'Ofertas', href: '/store/deals', icon: Tag },
   { name: 'Pedidos', href: '/store/orders', icon: ShoppingBag },
-  { name: 'Mi Tienda', href: '/store/settings', icon: Store },
+  { name: 'Mi Negocio', href: '/store/settings', icon: Store },
 ]
 
 export default function StoreSidebar() {

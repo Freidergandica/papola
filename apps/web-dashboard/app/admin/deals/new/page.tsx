@@ -26,7 +26,7 @@ export default async function AdminNewDealPage() {
     <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Nueva Oferta</h1>
-        <p className="mt-1 text-sm text-gray-500">Crea una oferta para cualquier tienda de la plataforma.</p>
+        <p className="mt-1 text-sm text-gray-500">Crea una oferta para cualquier afiliado de la plataforma.</p>
       </div>
 
       <DealForm

@@ -114,14 +114,14 @@ export default function DealForm({ userId, stores, storeId, redirectPath, autoAp
       {/* Store selector (only for admin) */}
       {!storeId && (
         <div>
-          <label className={labelClass}>Tienda</label>
+          <label className={labelClass}>Negocio</label>
           <select
             value={form.store_id}
             onChange={(e) => setForm({ ...form, store_id: e.target.value })}
             className={inputClass}
             required
           >
-            <option value="">Seleccionar tienda...</option>
+            <option value="">Seleccionar negocio...</option>
             {stores.map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}

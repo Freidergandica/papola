@@ -133,9 +133,9 @@ export default async function AdminDashboard() {
 
       {/* Placeholder for Top Stores Chart */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Top Tiendas (Próximamente)</h3>
+        <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Top Afiliados (Próximamente)</h3>
         <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-          <span className="text-gray-500">Gráfico de Ventas por Tienda</span>
+          <span className="text-gray-500">Gráfico de Ventas por Afiliado</span>
         </div>
       </div>
     </div>

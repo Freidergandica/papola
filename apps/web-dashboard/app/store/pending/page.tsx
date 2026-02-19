@@ -52,7 +52,7 @@ export default async function PendingStorePage() {
         <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3">
           <div className="flex items-center gap-3 text-sm">
             <Store className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <span className="text-gray-500">Tienda:</span>
+            <span className="text-gray-500">Negocio:</span>
             <span className="font-medium text-gray-900 truncate">{storeName}</span>
           </div>
           <div className="flex items-center gap-3 text-sm">

@@ -49,7 +49,7 @@ export default async function DashboardLayout({
             className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-papola-blue-20 hover:text-papola-blue transition-colors group"
           >
             <Store className="w-5 h-5 mr-3 group-hover:text-papola-blue" />
-            <span className="font-medium">Tiendas</span>
+            <span className="font-medium">Afiliados</span>
           </Link>
 
           <Link 

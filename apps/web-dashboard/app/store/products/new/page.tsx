@@ -19,8 +19,8 @@ export default async function NewProductPage() {
   if (!store) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">No se encontró tu tienda</h2>
-        <p className="mt-2 text-gray-500">Por favor contacta a soporte o asegúrate de tener una tienda asignada.</p>
+        <h2 className="text-xl font-semibold text-gray-900">No se encontró tu negocio</h2>
+        <p className="mt-2 text-gray-500">Por favor contacta a soporte o asegúrate de tener un negocio asignado.</p>
       </div>
     )
   }

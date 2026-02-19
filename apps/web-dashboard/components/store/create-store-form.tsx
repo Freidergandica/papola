@@ -37,7 +37,7 @@ export default function CreateStoreForm({ userId, userEmail }: { userId: string,
         console.error('Error creando perfil:', profileError)
       }
 
-      // 2. Crear Tienda
+      // 2. Registrar Negocio
       const { error: storeError } = await supabase
         .from('stores')
         .insert({
@@ -58,7 +58,7 @@ export default function CreateStoreForm({ userId, userEmail }: { userId: string,
       
     } catch (err: any) {
       console.error(err)
-      setError(err.message || 'Error al crear la tienda')
+      setError(err.message || 'Error al registrar el negocio')
     } finally {
       setLoading(false)
     }
@@ -69,7 +69,7 @@ export default function CreateStoreForm({ userId, userEmail }: { userId: string,
       <div className="text-center mb-6">
         <h3 className="text-lg font-medium text-gray-900">Completa tu Registro</h3>
         <p className="mt-1 text-sm text-gray-500">
-          Ya casi terminamos. Crea tu tienda para comenzar.
+          Ya casi terminamos. Registra tu negocio para comenzar.
         </p>
       </div>
 
@@ -164,7 +164,7 @@ export default function CreateStoreForm({ userId, userEmail }: { userId: string,
           disabled={loading}
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-papola-blue hover:bg-papola-blue-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-papola-blue transition-colors disabled:opacity-50"
         >
-          {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Crear Tienda'}
+          {loading ? <Loader2 className="animate-spin h-5 w-5" /> : 'Registrar Negocio'}
         </button>
       </form>
     </div>

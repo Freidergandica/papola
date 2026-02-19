@@ -46,7 +46,7 @@ export default function NewStorePage() {
       <div className="mb-8">
         <Link href="/admin/stores" className="text-sm text-gray-500 hover:text-gray-900 flex items-center mb-4">
           <ChevronLeft className="w-4 h-4 mr-1" />
-          Volver a Tiendas
+          Volver a Afiliados
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">Registrar Nuevo Afiliado</h1>
         <p className="text-gray-500 mt-2">Ingresa los detalles básicos del nuevo afiliado.</p>
@@ -143,7 +143,7 @@ export default function NewStorePage() {
             className="inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-papola-blue hover:bg-papola-blue-80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-papola-blue transition-colors"
           >
             <Save className="w-4 h-4 mr-2" />
-            Guardar Tienda
+            Guardar Afiliado
           </button>
         </div>
       </form>

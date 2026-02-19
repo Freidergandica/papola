@@ -72,7 +72,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
 
       if (error) throw error
 
-      setMessage({ type: 'success', text: 'Datos de la tienda actualizados correctamente.' })
+      setMessage({ type: 'success', text: 'Datos del negocio actualizados correctamente.' })
     } catch (error) {
       console.error('Error updating store:', error)
       setMessage({ type: 'error', text: 'Error al actualizar los datos.' })

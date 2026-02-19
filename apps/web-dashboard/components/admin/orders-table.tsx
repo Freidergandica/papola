@@ -82,7 +82,7 @@ export default function AdminOrdersTable({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar por usuario, tienda o ID..."
+            placeholder="Buscar por usuario, afiliado o ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue"
@@ -108,7 +108,7 @@ export default function AdminOrdersTable({
           onChange={(e) => setStoreFilter(e.target.value)}
           className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-papola-blue/20"
         >
-          <option value="all">Todas las tiendas</option>
+          <option value="all">Todos los afiliados</option>
           {stores.map((store) => (
             <option key={store.id} value={store.id}>{store.name}</option>
           ))}
@@ -142,7 +142,7 @@ export default function AdminOrdersTable({
                         {order.profiles?.full_name || 'Usuario'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {order.stores?.name || 'Tienda'} &middot; {new Date(order.created_at).toLocaleString('es', {
+                        {order.stores?.name || 'Afiliado'} &middot; {new Date(order.created_at).toLocaleString('es', {
                           day: 'numeric',
                           month: 'short',
                           hour: '2-digit',

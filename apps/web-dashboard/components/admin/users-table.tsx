@@ -171,7 +171,7 @@ export default function UsersTable({
                   Rol
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Tienda
+                  Afiliado
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                   Teléfono

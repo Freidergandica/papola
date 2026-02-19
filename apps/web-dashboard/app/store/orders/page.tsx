@@ -28,7 +28,7 @@ export default async function StoreOrdersPage() {
   if (!store) {
     return (
       <div className="py-12 text-center">
-        <p className="text-gray-500">Primero debes crear una tienda.</p>
+        <p className="text-gray-500">Primero debes registrar tu negocio.</p>
       </div>
     )
   }

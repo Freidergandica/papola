@@ -24,14 +24,14 @@ export default async function StoresPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Gestión de Tiendas</h2>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Gestión de Afiliados</h2>
           <p className="text-gray-500 mt-2">Activa, desactiva o edita los restaurantes de la plataforma.</p>
         </div>
         <Link 
           href="/admin/stores/new"
           className="bg-papola-blue hover:bg-papola-blue-80 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-papola-blue-20 transition-all flex items-center"
         >
-          + Nueva Tienda
+          + Nuevo Afiliado
         </Link>
       </div>
 

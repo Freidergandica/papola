@@ -53,7 +53,7 @@ export default async function ProductsPage() {
 
       {!store ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No tienes una tienda asignada o no se encontró tu tienda.</p>
+          <p className="text-gray-500">No tienes un negocio asignado o no se encontró tu negocio.</p>
         </div>
       ) : products.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">

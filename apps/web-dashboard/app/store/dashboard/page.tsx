@@ -49,7 +49,7 @@ export default async function StoreDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Hola, {store.name}</h1>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${store.is_active ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-          {store.is_active ? 'Tienda Activa' : 'En Revisión / Inactiva'}
+          {store.is_active ? 'Negocio Activo' : 'En Revisión / Inactiva'}
         </span>
       </div>
 
@@ -117,7 +117,7 @@ export default async function StoreDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Configuración</dt>
                   <dd>
-                    <div className="text-lg font-medium text-gray-900">Perfil de Tienda</div>
+                    <div className="text-lg font-medium text-gray-900">Perfil del Negocio</div>
                   </dd>
                 </dl>
               </div>

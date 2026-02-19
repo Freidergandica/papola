@@ -17,7 +17,7 @@ export default async function StoreDealsPage() {
   if (!store) {
     return (
       <div className="py-12 text-center">
-        <p className="text-gray-500">Primero debes crear una tienda.</p>
+        <p className="text-gray-500">Primero debes registrar tu negocio.</p>
         <Link href="/store/dashboard" className="text-papola-blue hover:text-papola-blue-80 mt-2 inline-block">
           Ir al panel
         </Link>
@@ -46,7 +46,7 @@ export default async function StoreDealsPage() {
       <div className="sm:flex sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mis Ofertas</h1>
-          <p className="mt-1 text-sm text-gray-500">Gestiona las ofertas y descuentos de tu tienda.</p>
+          <p className="mt-1 text-sm text-gray-500">Gestiona las ofertas y descuentos de tu negocio.</p>
         </div>
         <Link
           href="/store/deals/new"

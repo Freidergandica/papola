@@ -8,7 +8,7 @@ import Image from 'next/image'
 
 const navigation = [
   { name: 'Panel', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Tiendas', href: '/admin/stores', icon: Store },
+  { name: 'Afiliados', href: '/admin/stores', icon: Store },
   { name: 'Ofertas', href: '/admin/deals', icon: Tag },
   { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
   { name: 'Usuarios', href: '/admin/users', icon: Users },

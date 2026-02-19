@@ -17,7 +17,7 @@ export default async function SettingsPage() {
   if (!store) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900">No se encontró tu tienda</h2>
+        <h2 className="text-xl font-semibold text-gray-900">No se encontró tu negocio</h2>
         <p className="mt-2 text-gray-500">Por favor contacta a soporte.</p>
       </div>
     )
@@ -26,7 +26,7 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configuración de Mi Tienda</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Configuración de Mi Negocio</h1>
         <p className="mt-1 text-sm text-gray-500">
           Gestiona la información de tu negocio, logo y horarios.
         </p>

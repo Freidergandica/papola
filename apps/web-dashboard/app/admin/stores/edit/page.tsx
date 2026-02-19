@@ -72,7 +72,7 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
       <div className="mb-8">
         <Link href="/admin/stores" className="text-sm text-gray-500 hover:text-gray-900 flex items-center mb-4">
           <ChevronLeft className="w-4 h-4 mr-1" />
-          Volver a Tiendas
+          Volver a Afiliados
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">Editar Afiliado</h1>
         <p className="text-gray-500 mt-2">Modifica los datos de <strong>{store.name}</strong>.</p>
