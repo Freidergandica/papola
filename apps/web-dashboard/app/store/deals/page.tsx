@@ -61,7 +61,7 @@ export default async function StoreDealsPage() {
         <div className="text-center py-12 bg-white rounded-lg shadow">
           <Tag className="mx-auto h-12 w-12 text-gray-300" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">Sin ofertas</h3>
-          <p className="mt-2 text-sm text-gray-500">Crea tu primera oferta para atraer más clientes.</p>
+          <p className="mt-2 text-sm text-gray-500">Crea tu primera oferta para atraer más usuarios.</p>
           <Link
             href="/store/deals/new"
             className="mt-4 inline-flex items-center text-papola-blue hover:text-papola-blue-80 font-medium text-sm"

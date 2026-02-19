@@ -59,7 +59,7 @@ export default function OrderNotification({ storeId }: { storeId: string | null 
               id: crypto.randomUUID(),
               orderId: order.id,
               total: order.total_amount,
-              customerName: (order as any).profiles?.full_name || 'Cliente',
+              customerName: (order as any).profiles?.full_name || 'Usuario',
               timestamp: new Date(),
               type: 'new_order',
             })
@@ -91,7 +91,7 @@ export default function OrderNotification({ storeId }: { storeId: string | null 
               id: crypto.randomUUID(),
               orderId: order.id,
               total: order.total_amount,
-              customerName: (order as any).profiles?.full_name || 'Cliente',
+              customerName: (order as any).profiles?.full_name || 'Usuario',
               timestamp: new Date(),
               type: 'payment_confirmed',
             })

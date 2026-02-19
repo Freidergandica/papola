@@ -82,7 +82,7 @@ export default function AdminOrdersTable({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Buscar por cliente, tienda o ID..."
+            placeholder="Buscar por usuario, tienda o ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue"
@@ -139,7 +139,7 @@ export default function AdminOrdersTable({
                     </span>
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {order.profiles?.full_name || 'Cliente'}
+                        {order.profiles?.full_name || 'Usuario'}
                       </p>
                       <p className="text-xs text-gray-500">
                         {order.stores?.name || 'Tienda'} &middot; {new Date(order.created_at).toLocaleString('es', {
@@ -168,7 +168,7 @@ export default function AdminOrdersTable({
                 <div className="px-5 pb-4 border-t border-gray-100 pt-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-400 text-xs font-medium mb-1">Cliente</p>
+                      <p className="text-gray-400 text-xs font-medium mb-1">Usuario</p>
                       <p className="text-gray-900">{order.profiles?.full_name || '—'}</p>
                       <p className="text-gray-500 text-xs">{order.profiles?.email}</p>
                       {order.profiles?.phone_number && (

@@ -25,7 +25,7 @@ const roleLabels: Record<string, { label: string; color: string; icon: typeof Sh
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700 border-red-200', icon: Shield },
   store_owner: { label: 'Afiliado', color: 'bg-papola-blue-20 text-papola-blue border-papola-blue', icon: Store },
   pending_store_owner: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
-  customer: { label: 'Cliente', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: User },
+  customer: { label: 'Usuario', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: User },
   driver: { label: 'Repartidor', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: User },
 }
 
@@ -153,7 +153,7 @@ export default function UsersTable({
           <option value="pending_store_owner">Pendientes de Aprobación</option>
           <option value="admin">Administradores</option>
           <option value="store_owner">Afiliados</option>
-          <option value="customer">Clientes</option>
+          <option value="customer">Usuarios</option>
           <option value="driver">Repartidores</option>
         </select>
       </div>
@@ -273,7 +273,7 @@ export default function UsersTable({
                                 disabled={changingRole === user.id}
                                 className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium border border-gray-200 rounded-lg bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 disabled:opacity-50 cursor-pointer"
                               >
-                                <option value="customer">Cliente</option>
+                                <option value="customer">Usuario</option>
                                 <option value="store_owner">Afiliado</option>
                                 <option value="admin">Admin</option>
                                 <option value="driver">Repartidor</option>

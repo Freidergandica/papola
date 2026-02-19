@@ -65,7 +65,7 @@ export default async function UsersPage() {
           <p className="text-2xl font-bold text-papola-green mt-1">{storeOwnerCount}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <p className="text-sm font-medium text-gray-500">Clientes</p>
+          <p className="text-sm font-medium text-gray-500">Usuarios</p>
           <p className="text-2xl font-bold text-gray-700 mt-1">{customerCount}</p>
         </div>
         <div className="bg-white rounded-xl border border-yellow-200 p-4">

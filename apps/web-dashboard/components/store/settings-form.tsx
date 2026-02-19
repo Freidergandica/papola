@@ -87,7 +87,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
         <div className="md:col-span-1">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Información General</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Detalles públicos de tu negocio visibles para los clientes.
+            Detalles públicos de tu negocio visibles para los usuarios.
           </p>
         </div>
         <div className="mt-5 md:mt-0 md:col-span-2 space-y-6">
@@ -202,7 +202,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
         <div className="md:col-span-1">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Ubicación y Contacto</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Cómo pueden encontrarte tus clientes.
+            Cómo pueden encontrarte tus usuarios.
           </p>
         </div>
         <div className="mt-5 md:mt-0 md:col-span-2 space-y-6">

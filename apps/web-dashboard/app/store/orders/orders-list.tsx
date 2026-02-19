@@ -145,7 +145,7 @@ export default function StoreOrdersList({
                 </div>
 
                 <div className="text-sm text-gray-700 mb-2">
-                  <span className="font-medium">{order.profiles?.full_name || 'Cliente'}</span>
+                  <span className="font-medium">{order.profiles?.full_name || 'Usuario'}</span>
                   {order.profiles?.phone_number && (
                     <span className="text-gray-400 ml-2">{order.profiles.phone_number}</span>
                   )}
