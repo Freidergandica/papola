@@ -23,6 +23,7 @@ interface StoreInfo {
 
 const roleLabels: Record<string, { label: string; color: string; icon: typeof Shield }> = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700 border-red-200', icon: Shield },
+  sales_manager: { label: 'Gerente de Ventas', color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Shield },
   store_owner: { label: 'Afiliado', color: 'bg-papola-blue-20 text-papola-blue border-papola-blue', icon: Store },
   pending_store_owner: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock },
   customer: { label: 'Usuario', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: User },
@@ -152,6 +153,7 @@ export default function UsersTable({
           <option value="all">Todos los roles</option>
           <option value="pending_store_owner">Pendientes de Aprobación</option>
           <option value="admin">Administradores</option>
+          <option value="sales_manager">Gerentes de Ventas</option>
           <option value="store_owner">Afiliados</option>
           <option value="customer">Usuarios</option>
           <option value="driver">Repartidores</option>
@@ -275,6 +277,7 @@ export default function UsersTable({
                               >
                                 <option value="customer">Usuario</option>
                                 <option value="store_owner">Afiliado</option>
+                                <option value="sales_manager">Gerente de Ventas</option>
                                 <option value="admin">Admin</option>
                                 <option value="driver">Repartidor</option>
                               </select>

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Save, Landmark } from 'lucide-react'
+import { ChevronLeft, Save, Landmark, Hash, Upload } from 'lucide-react'
 import { STORE_CATEGORIES } from '@/lib/categories'
 
 export default async function EditStorePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -41,11 +41,30 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
     const category = formData.get('category') as string
     const phone = formData.get('phone') as string
     const schedule = formData.get('schedule') as string
-    const image_url = formData.get('image_url') as string
     const delivery_min = parseInt(formData.get('delivery_min') as string) || 20
     const delivery_max = parseInt(formData.get('delivery_max') as string) || 45
 
     const adminClient = createAdminClient()
+
+    // Handle image upload
+    let image_url = formData.get('current_image_url') as string || ''
+    const imageFile = formData.get('image') as File
+
+    if (imageFile && imageFile.size > 0) {
+      const ext = imageFile.name.split('.').pop() || 'jpg'
+      const path = `${storeId}/logo.${ext}`
+
+      const { error: uploadError } = await adminClient.storage
+        .from('stores')
+        .upload(path, imageFile, { upsert: true })
+
+      if (!uploadError) {
+        const { data: urlData } = adminClient.storage.from('stores').getPublicUrl(path)
+        image_url = urlData.publicUrl
+      } else {
+        console.error('Error uploading image:', uploadError)
+      }
+    }
 
     const { error } = await adminClient.from('stores').update({
       name,
@@ -157,16 +176,33 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
         </div>
 
         <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">URL de Imagen</label>
-          <input
-            type="url"
-            name="image_url"
-            id="image_url"
-            defaultValue={store.image_url || ''}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm px-4 py-3 border text-gray-900 bg-white"
-            placeholder="https://..."
-          />
+          <label className="block text-sm font-medium text-gray-700">Imagen del Negocio</label>
+          <input type="hidden" name="current_image_url" value={store.image_url || ''} />
+          {store.image_url && (
+            <div className="mt-2 mb-3">
+              <img src={store.image_url} alt={store.name} className="h-32 w-full object-cover rounded-lg border border-gray-200" />
+            </div>
+          )}
+          <label htmlFor="image" className="mt-1 flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-papola-blue transition-colors bg-gray-50">
+            <Upload className="w-4 h-4 text-gray-400 mr-2" />
+            <span className="text-sm text-gray-500">Seleccionar nueva imagen</span>
+            <input
+              type="file"
+              name="image"
+              id="image"
+              accept="image/*"
+              className="hidden"
+            />
+          </label>
+          <p className="mt-1 text-xs text-gray-400">JPG, PNG o WebP. Se reemplazará la imagen actual.</p>
         </div>
+
+        {store.affiliate_number && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-papola-blue-20 rounded-lg">
+            <Hash className="h-4 w-4 text-papola-blue" />
+            <span className="text-sm font-bold text-papola-blue">Afiliado N° {store.affiliate_number}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -212,7 +248,7 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
                 <dd className="mt-1 text-sm text-gray-900 font-mono">{store.bank_account_number || '-'}</dd>
               </div>
               <div>
-                <dt className="text-xs font-medium text-gray-500">Cédula del Titular</dt>
+                <dt className="text-xs font-medium text-gray-500">Cédula / RIF del Titular</dt>
                 <dd className="mt-1 text-sm text-gray-900">{store.bank_account_holder_id || '-'}</dd>
               </div>
             </div>

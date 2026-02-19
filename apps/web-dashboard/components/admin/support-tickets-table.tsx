@@ -12,6 +12,7 @@ interface SupportTicket {
   status: string
   created_at: string
   last_message_at: string
+  store_name?: string | null
   profiles?: { full_name: string; email: string; role: string }
   support_messages?: Array<{ message: string; created_at: string; sender_id: string }>
 }
@@ -131,7 +132,11 @@ export default function AdminSupportTicketsTable({ tickets }: { tickets: Support
               <p className="text-sm font-bold text-gray-900 mb-1">{ticket.subject}</p>
               <div className="flex items-center gap-2 mb-1">
                 <p className="text-xs text-gray-500">
-                  {ticket.profiles?.full_name || 'Usuario'} &middot; {ticket.profiles?.email || ''}
+                  {isAffiliate && ticket.store_name
+                    ? <><span className="font-medium text-purple-600">{ticket.store_name}</span> &middot; {ticket.profiles?.full_name || 'Afiliado'}</>
+                    : ticket.profiles?.full_name || 'Usuario'
+                  }
+                  {' '}&middot; {ticket.profiles?.email || ''}
                 </p>
               </div>
               {lastMsg && (

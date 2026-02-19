@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Search, Package, Clock, CheckCircle, Truck, ShoppingBag, XCircle } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { updateOrderStatus } from '@/app/admin/orders/actions'
+import { Search, Package, Clock, CheckCircle, Truck, ShoppingBag, XCircle, RefreshCw } from 'lucide-react'
 
 interface Order {
   id: string
@@ -66,8 +67,27 @@ export default function AdminOrdersTable({
   const [statusFilter, setStatusFilter] = useState('all')
   const [storeFilter, setStoreFilter] = useState('all')
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
+  const [localOrders, setLocalOrders] = useState(orders)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
-  const filtered = orders.filter((order) => {
+  async function handleStatusChange(orderId: string, newStatus: string) {
+    setUpdatingId(orderId)
+    // Optimistic update
+    setLocalOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+
+    startTransition(async () => {
+      const result = await updateOrderStatus(orderId, newStatus)
+      if (result.error) {
+        // Revert on error
+        setLocalOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: orders.find(orig => orig.id === orderId)?.status || o.status } : o))
+        alert('Error al cambiar estado: ' + result.error)
+      }
+      setUpdatingId(null)
+    })
+  }
+
+  const filtered = localOrders.filter((order) => {
     const matchesSearch =
       !search ||
       order.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -227,10 +247,31 @@ export default function AdminOrdersTable({
                     </div>
                   )}
 
+                  {/* Cambiar Status */}
                   <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-400">
-                      ID: {order.id.slice(0, 8)}... &middot; Creado: {new Date(order.created_at).toLocaleString('es')}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-400 text-xs font-medium">Cambiar estado:</p>
+                        <div className="relative">
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            disabled={updatingId === order.id}
+                            className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue disabled:opacity-50 bg-white"
+                          >
+                            {Object.entries(statusLabels).map(([value, { label }]) => (
+                              <option key={value} value={value}>{label}</option>
+                            ))}
+                          </select>
+                          {updatingId === order.id && (
+                            <RefreshCw className="absolute right-8 top-1/2 -translate-y-1/2 h-3 w-3 text-papola-blue animate-spin" />
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        ID: {order.id.slice(0, 8)}...
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -244,7 +285,7 @@ export default function AdminOrdersTable({
           <ShoppingBag className="mx-auto h-12 w-12 text-gray-300" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">Sin pedidos</h3>
           <p className="mt-2 text-sm text-gray-500">
-            {orders.length === 0
+            {localOrders.length === 0
               ? 'Aún no hay pedidos en la plataforma.'
               : 'No se encontraron pedidos con esos criterios.'}
           </p>
@@ -252,7 +293,7 @@ export default function AdminOrdersTable({
       )}
 
       <p className="mt-4 text-xs text-gray-400">
-        Mostrando {filtered.length} de {orders.length} pedidos
+        Mostrando {filtered.length} de {localOrders.length} pedidos
       </p>
     </div>
   )

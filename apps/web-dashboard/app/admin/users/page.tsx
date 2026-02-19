@@ -39,6 +39,7 @@ export default async function UsersPage() {
   // Count stats
   const totalUsers = users?.length || 0
   const adminCount = users?.filter(u => u.role === 'admin').length || 0
+  const salesManagerCount = users?.filter(u => u.role === 'sales_manager').length || 0
   const storeOwnerCount = users?.filter(u => u.role === 'store_owner').length || 0
   const customerCount = users?.filter(u => u.role === 'customer').length || 0
   const pendingCount = users?.filter(u => u.role === 'pending_store_owner').length || 0
@@ -51,7 +52,7 @@ export default async function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="text-sm font-medium text-gray-500">Total Usuarios</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{totalUsers}</p>
@@ -59,6 +60,10 @@ export default async function UsersPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="text-sm font-medium text-gray-500">Administradores</p>
           <p className="text-2xl font-bold text-papola-blue mt-1">{adminCount}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-indigo-200 p-4">
+          <p className="text-sm font-medium text-indigo-600">Gerentes</p>
+          <p className="text-2xl font-bold text-indigo-600 mt-1">{salesManagerCount}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 p-4">
           <p className="text-sm font-medium text-gray-500">Afiliados</p>

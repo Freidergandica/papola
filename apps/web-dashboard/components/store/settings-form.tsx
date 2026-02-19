@@ -25,7 +25,8 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
   const [bankForm, setBankForm] = useState({
     bank_name: '',
     account_number: '',
-    holder_id: '',
+    holder_id_type: 'V' as 'V' | 'J' | 'E' | 'G',
+    holder_id_number: '',
     account_type: 'corriente' as 'corriente' | 'ahorro'
   })
 
@@ -107,8 +108,8 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
       setBankMessage({ type: 'error', text: 'Selecciona un banco.' })
       return
     }
-    if (!bankForm.holder_id.trim()) {
-      setBankMessage({ type: 'error', text: 'Ingresa la cédula del titular.' })
+    if (!bankForm.holder_id_number.trim()) {
+      setBankMessage({ type: 'error', text: 'Ingresa la cédula o RIF del titular.' })
       return
     }
 
@@ -119,6 +120,8 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
 
+      const holderId = `${bankForm.holder_id_type}-${bankForm.holder_id_number}`
+
       const { error } = await supabase
         .from('bank_account_changes')
         .insert({
@@ -126,7 +129,7 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
           requested_by: user.id,
           new_bank_name: bankForm.bank_name,
           new_account_number: bankForm.account_number,
-          new_account_holder_id: bankForm.holder_id,
+          new_account_holder_id: holderId,
           new_account_type: bankForm.account_type,
           old_bank_name: store.bank_name || null,
           old_account_number: store.bank_account_number || null,
@@ -385,7 +388,7 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
                   <dd className="mt-1 text-sm text-gray-900 font-mono">{store.bank_account_number || '-'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Cédula del Titular</dt>
+                  <dt className="text-sm font-medium text-gray-500">Cédula / RIF del Titular</dt>
                   <dd className="mt-1 text-sm text-gray-900">{store.bank_account_holder_id || '-'}</dd>
                 </div>
               </div>
@@ -411,7 +414,8 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
                   setBankForm({
                     bank_name: '',
                     account_number: '',
-                    holder_id: '',
+                    holder_id_type: 'V',
+                    holder_id_number: '',
                     account_type: 'corriente'
                   })
                   setBankMessage(null)
@@ -486,14 +490,31 @@ export default function StoreSettingsForm({ store, pendingBankChange }: Props) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Cédula del Titular</label>
-                    <input
-                      type="text"
-                      value={bankForm.holder_id}
-                      onChange={(e) => setBankForm({ ...bankForm, holder_id: e.target.value })}
-                      placeholder="Ej. V-12345678"
-                      className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm text-gray-900 bg-white"
-                    />
+                    <label className="block text-sm font-medium text-gray-700">Cédula / RIF del Titular</label>
+                    <div className="mt-1 flex">
+                      <select
+                        value={bankForm.holder_id_type}
+                        onChange={(e) => setBankForm({ ...bankForm, holder_id_type: e.target.value as 'V' | 'J' | 'E' | 'G' })}
+                        className="rounded-l-md border border-r-0 border-gray-300 py-2 px-3 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm text-gray-900 bg-gray-50 font-medium"
+                      >
+                        <option value="V">V</option>
+                        <option value="J">J</option>
+                        <option value="E">E</option>
+                        <option value="G">G</option>
+                      </select>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={bankForm.holder_id_number}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '')
+                          setBankForm({ ...bankForm, holder_id_number: val })
+                        }}
+                        placeholder="12345678"
+                        className="flex-1 rounded-r-md border border-gray-300 py-2 px-3 shadow-sm focus:border-papola-blue focus:ring-papola-blue sm:text-sm text-gray-900 bg-white"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">V: Cédula venezolana, J: RIF jurídico, E: Extranjero, G: Gobierno</p>
                   </div>
 
                   <div>

@@ -28,7 +28,18 @@ export default async function AdminSupportPage() {
     `)
     .order('last_message_at', { ascending: false })
 
-  const allTickets = tickets || []
+  // Fetch stores to map owner_id → store name for affiliate tickets
+  const { data: stores } = await admin
+    .from('stores')
+    .select('owner_id, name')
+
+  const storeByOwner: Record<string, string> = {}
+  stores?.forEach((s) => { storeByOwner[s.owner_id] = s.name })
+
+  const allTickets = (tickets || []).map(t => ({
+    ...t,
+    store_name: storeByOwner[t.user_id] || null,
+  }))
   const openCount = allTickets.filter(t => t.status === 'open').length
   const inProgressCount = allTickets.filter(t => t.status === 'in_progress').length
   const resolvedCount = allTickets.filter(t => t.status === 'resolved' || t.status === 'closed').length

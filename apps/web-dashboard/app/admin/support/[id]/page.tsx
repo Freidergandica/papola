@@ -30,6 +30,17 @@ export default async function AdminSupportChat({ params }: { params: Promise<{ i
 
   if (!ticket) redirect('/admin/support')
 
+  // Get store name if affiliate
+  let storeName: string | null = null
+  if (ticket.profiles?.role === 'store_owner') {
+    const { data: store } = await admin
+      .from('stores')
+      .select('name')
+      .eq('owner_id', ticket.user_id)
+      .single()
+    storeName = store?.name || null
+  }
+
   const { data: messages } = await admin
     .from('support_messages')
     .select('*')
@@ -62,7 +73,11 @@ export default async function AdminSupportChat({ params }: { params: Promise<{ i
           <h1 className="text-lg font-bold text-gray-900 truncate">{ticket.subject}</h1>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs text-gray-500">
-              {ticket.profiles?.full_name || 'Usuario'} &middot; {ticket.profiles?.email || ''}
+              {isAffiliate && storeName
+                ? <><span className="font-medium text-purple-600">{storeName}</span> &middot; {ticket.profiles?.full_name || 'Afiliado'}</>
+                : ticket.profiles?.full_name || 'Usuario'
+              }
+              {' '}&middot; {ticket.profiles?.email || ''}
             </span>
             {isAffiliate ? (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-600">

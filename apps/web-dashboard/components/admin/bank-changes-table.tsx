@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, X, Loader2, ArrowRight } from 'lucide-react'
-import { approveBankChange, rejectBankChange } from '@/app/admin/bank-changes/actions'
+import { Check, X, Loader2, ArrowRight, Trash2 } from 'lucide-react'
+import { approveBankChange, rejectBankChange, deleteBankChange } from '@/app/admin/bank-changes/actions'
 
 interface BankChange {
   id: string
@@ -56,6 +56,15 @@ export default function BankChangesTable({ changes }: { changes: BankChange[] })
     setLoadingId(id)
     setError(null)
     const result = await rejectBankChange(id)
+    if (result.error) setError(result.error)
+    setLoadingId(null)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar esta solicitud? Esta acción no se puede deshacer.')) return
+    setLoadingId(id)
+    setError(null)
+    const result = await deleteBankChange(id)
     if (result.error) setError(result.error)
     setLoadingId(null)
   }
@@ -147,39 +156,53 @@ export default function BankChangesTable({ changes }: { changes: BankChange[] })
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {change.status === 'pending' && (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleApprove(change.id)}
-                            disabled={loadingId === change.id}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
-                          >
-                            {loadingId === change.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Check className="h-3.5 w-3.5" />
-                            )}
-                            Aprobar
-                          </button>
-                          <button
-                            onClick={() => handleReject(change.id)}
-                            disabled={loadingId === change.id}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-                          >
-                            {loadingId === change.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <X className="h-3.5 w-3.5" />
-                            )}
-                            Rechazar
-                          </button>
-                        </div>
-                      )}
-                      {change.status !== 'pending' && change.reviewed_at && (
-                        <span className="text-xs text-gray-400">
-                          {new Date(change.reviewed_at).toLocaleDateString('es-VE')}
-                        </span>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {change.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(change.id)}
+                              disabled={loadingId === change.id}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {loadingId === change.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Check className="h-3.5 w-3.5" />
+                              )}
+                              Aprobar
+                            </button>
+                            <button
+                              onClick={() => handleReject(change.id)}
+                              disabled={loadingId === change.id}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                            >
+                              {loadingId === change.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <X className="h-3.5 w-3.5" />
+                              )}
+                              Rechazar
+                            </button>
+                          </>
+                        )}
+                        {change.status !== 'pending' && change.reviewed_at && (
+                          <span className="text-xs text-gray-400 mr-2 self-center">
+                            {new Date(change.reviewed_at).toLocaleDateString('es-VE')}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleDelete(change.id)}
+                          disabled={loadingId === change.id}
+                          className="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200 hover:text-red-600 disabled:opacity-50 transition-colors"
+                          title="Eliminar solicitud"
+                        >
+                          {loadingId === change.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

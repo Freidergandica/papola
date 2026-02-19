@@ -80,7 +80,7 @@ export default function LoginPage() {
         }
       }
 
-      if (profile.role === 'admin') {
+      if (profile.role === 'admin' || profile.role === 'sales_manager') {
         router.push('/admin/dashboard')
       } else if (profile.role === 'store_owner') {
         router.push('/store/dashboard')

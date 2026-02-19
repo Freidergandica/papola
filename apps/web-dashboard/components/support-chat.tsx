@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Send } from 'lucide-react'
 
@@ -135,7 +135,7 @@ export default function SupportChat({
       ) : (
         <div className="flex items-end gap-2 px-4 py-3 border-t border-gray-200 bg-white">
           <textarea
-            className="flex-1 resize-none border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue max-h-24"
+            className="flex-1 resize-none border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue max-h-24"
             placeholder="Escribe un mensaje..."
             value={text}
             onChange={(e) => setText(e.target.value)}

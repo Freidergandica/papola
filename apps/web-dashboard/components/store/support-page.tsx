@@ -137,7 +137,7 @@ export default function StoreSupportPage({
               <label className="block text-sm font-medium text-gray-700 mb-1">Asunto</label>
               <input
                 type="text"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue"
                 placeholder="¿En qué podemos ayudarte?"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
@@ -166,7 +166,7 @@ export default function StoreSupportPage({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
               <textarea
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-papola-blue/20 focus:border-papola-blue resize-none"
                 placeholder="Describe tu consulta..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Edit, Trash2 } from 'lucide-react'
-import Image from 'next/image'
+import { Plus } from 'lucide-react'
+import DeleteProductButton from './delete-product-button'
 
 export default async function ProductsPage() {
   const supabase = await createClient()
@@ -98,8 +98,8 @@ export default async function ProductsPage() {
                           Stock: {product.stock || 0}
                         </p>
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                         {/* Actions could go here */}
+                      <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 sm:mt-0">
+                        <DeleteProductButton productId={product.id} productName={product.name} />
                       </div>
                     </div>
                   </div>

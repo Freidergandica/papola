@@ -6,19 +6,20 @@ import { LayoutDashboard, Store, Users, Settings, Tag, ShoppingBag, Landmark, Me
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
-const navigation = [
-  { name: 'Panel', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Afiliados', href: '/admin/stores', icon: Store },
-  { name: 'Ofertas', href: '/admin/deals', icon: Tag },
-  { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
-  { name: 'Usuarios', href: '/admin/users', icon: Users },
-  { name: 'Cuentas', href: '/admin/bank-changes', icon: Landmark },
-  { name: 'Soporte', href: '/admin/support', icon: MessageCircle },
-  { name: 'Config', href: '/admin/settings', icon: Settings },
+const allNavigation = [
+  { name: 'Panel', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['admin', 'sales_manager'] },
+  { name: 'Afiliados', href: '/admin/stores', icon: Store, roles: ['admin', 'sales_manager'] },
+  { name: 'Ofertas', href: '/admin/deals', icon: Tag, roles: ['admin', 'sales_manager'] },
+  { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag, roles: ['admin', 'sales_manager'] },
+  { name: 'Usuarios', href: '/admin/users', icon: Users, roles: ['admin'] },
+  { name: 'Cuentas', href: '/admin/bank-changes', icon: Landmark, roles: ['admin'] },
+  { name: 'Soporte', href: '/admin/support', icon: MessageCircle, roles: ['admin'] },
+  { name: 'Config', href: '/admin/settings', icon: Settings, roles: ['admin'] },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ role = 'admin' }: { role?: string }) {
   const pathname = usePathname()
+  const navigation = allNavigation.filter(item => item.roles.includes(role))
 
   return (
     <>
@@ -38,6 +39,11 @@ export default function Sidebar() {
                   />
                 </div>
               </div>
+              {role === 'sales_manager' && (
+                <div className="mx-4 mb-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
+                  <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Gerente de Ventas</p>
+                </div>
+              )}
               <nav className="mt-5 flex-1 px-4 space-y-2">
                 {navigation.map((item) => {
                   const isActive = pathname.startsWith(item.href)

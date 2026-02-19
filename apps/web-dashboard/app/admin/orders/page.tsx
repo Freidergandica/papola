@@ -16,7 +16,7 @@ export default async function AdminOrdersPage() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') redirect('/login')
+  if (profile?.role !== 'admin' && profile?.role !== 'sales_manager') redirect('/login')
 
   // Use admin client to bypass RLS and see all customer profiles
   const admin = createAdminClient()

@@ -62,20 +62,37 @@ export default function ExchangeRateManager({
     setError('')
 
     try {
-      // Try to fetch from BCV API proxy or known endpoint
-      const res = await fetch('https://pydolarve.org/api/v2/dollar?monitor=bcv')
-      if (res.ok) {
-        const data = await res.json()
-        // pydolarve returns { price: number } for BCV
-        const bcvRate = data?.price || data?.monitors?.bcv?.price
-        if (bcvRate) {
-          setNewRate(String(bcvRate))
-          setSource('BCV (automático)')
-        } else {
-          setError('No se pudo extraer la tasa del BCV. Ingrésala manualmente.')
+      // Primary: bcv-api.rafnixg.dev (free, no auth)
+      let bcvRate: number | null = null
+
+      try {
+        const res = await fetch('https://bcv-api.rafnixg.dev/rates/')
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.dollar) bcvRate = data.dollar
         }
+      } catch {
+        // Primary failed, try fallback
+      }
+
+      // Fallback: pydolarve
+      if (!bcvRate) {
+        try {
+          const res = await fetch('https://pydolarve.org/api/v2/dollar?monitor=bcv')
+          if (res.ok) {
+            const data = await res.json()
+            bcvRate = data?.price || data?.monitors?.bcv?.price || null
+          }
+        } catch {
+          // Fallback also failed
+        }
+      }
+
+      if (bcvRate) {
+        setNewRate(String(bcvRate))
+        setSource('BCV (automático)')
       } else {
-        setError('No se pudo conectar con la API de tasa BCV. Ingrésala manualmente.')
+        setError('No se pudo obtener la tasa del BCV. Ingrésala manualmente.')
       }
     } catch {
       setError('Error de conexión. Ingresa la tasa manualmente.')

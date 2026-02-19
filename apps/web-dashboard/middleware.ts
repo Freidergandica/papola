@@ -69,8 +69,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // /admin/* requires admin role
-    if (pathname.startsWith('/admin') && role !== 'admin') {
+    // /admin/* requires admin or sales_manager role
+    if (pathname.startsWith('/admin') && role !== 'admin' && role !== 'sales_manager') {
       url.pathname = role === 'store_owner' ? '/store/dashboard' : '/login';
       return NextResponse.redirect(url);
     }
