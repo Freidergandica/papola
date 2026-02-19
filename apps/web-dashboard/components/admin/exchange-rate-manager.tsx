@@ -62,34 +62,11 @@ export default function ExchangeRateManager({
     setError('')
 
     try {
-      // Primary: bcv-api.rafnixg.dev (free, no auth)
-      let bcvRate: number | null = null
+      const res = await fetch('/api/bcv-rate')
+      const data = await res.json()
 
-      try {
-        const res = await fetch('https://bcv-api.rafnixg.dev/rates/')
-        if (res.ok) {
-          const data = await res.json()
-          if (data?.dollar) bcvRate = data.dollar
-        }
-      } catch {
-        // Primary failed, try fallback
-      }
-
-      // Fallback: pydolarve
-      if (!bcvRate) {
-        try {
-          const res = await fetch('https://pydolarve.org/api/v2/dollar?monitor=bcv')
-          if (res.ok) {
-            const data = await res.json()
-            bcvRate = data?.price || data?.monitors?.bcv?.price || null
-          }
-        } catch {
-          // Fallback also failed
-        }
-      }
-
-      if (bcvRate) {
-        setNewRate(String(bcvRate))
+      if (res.ok && data.rate) {
+        setNewRate(String(data.rate))
         setSource('BCV (automático)')
       } else {
         setError('No se pudo obtener la tasa del BCV. Ingrésala manualmente.')
