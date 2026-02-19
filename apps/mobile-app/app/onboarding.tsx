@@ -30,7 +30,7 @@ const slides: Slide[] = [
   {
     id: '3',
     image: require('../assets/onboarding-3.png'),
-    title: 'Informate de las liquidaciones\ndel comercio',
+    title: 'Informate de las liquidaciones\nde los afiliados',
     description: 'Accede a las notificaciones de tus productos preferidos en remate.',
   },
 ];

@@ -133,7 +133,7 @@ export default function RegisterStorePage() {
           Únete a Papola
         </h2>
         <p className="mt-2 text-sm text-gray-600">
-          Registra tu comercio y comienza a vender hoy mismo.
+          Regístrate como afiliado y comienza a vender hoy mismo.
         </p>
       </div>
 
@@ -237,7 +237,7 @@ export default function RegisterStorePage() {
             {step === 2 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="text-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Datos del Comercio</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Datos del Negocio</h3>
                 </div>
 
                 <div>

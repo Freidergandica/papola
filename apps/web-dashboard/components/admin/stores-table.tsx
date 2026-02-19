@@ -19,7 +19,7 @@ export default function StoresTable({ initialStores }: { initialStores: any[] })
 
       if (error) {
         console.error('Error updating store:', error)
-        alert('Error al actualizar el comercio')
+        alert('Error al actualizar el afiliado')
         return
       }
 
@@ -37,7 +37,7 @@ export default function StoresTable({ initialStores }: { initialStores: any[] })
         <thead className="bg-gray-50">
           <tr>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Comercio
+              Afiliado
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ubicación

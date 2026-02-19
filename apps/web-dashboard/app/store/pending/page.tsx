@@ -45,7 +45,7 @@ export default async function PendingStorePage() {
         </h1>
 
         <p className="text-gray-600 mb-6">
-          Tu solicitud para registrar un comercio está siendo revisada por nuestro equipo.
+          Tu solicitud para registrarte como afiliado está siendo revisada por nuestro equipo.
           Te notificaremos cuando sea aprobada.
         </p>
 

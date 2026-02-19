@@ -87,13 +87,13 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
         <div className="md:col-span-1">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Información General</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Detalles públicos de tu comercio visibles para los clientes.
+            Detalles públicos de tu negocio visibles para los clientes.
           </p>
         </div>
         <div className="mt-5 md:mt-0 md:col-span-2 space-y-6">
           <div className="grid grid-cols-6 gap-6">
             <div className="col-span-6 sm:col-span-4">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Comercio</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Negocio</label>
               <input
                 type="text"
                 name="name"
@@ -135,7 +135,7 @@ export default function StoreSettingsForm({ store }: { store: Store }) {
             </div>
 
              <div className="col-span-6">
-              <label className="block text-sm font-medium text-gray-700">Logo del Comercio</label>
+              <label className="block text-sm font-medium text-gray-700">Logo del Negocio</label>
               <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative hover:border-papola-blue transition-colors">
                 <div className="space-y-1 text-center">
                   {formData.image_url ? (

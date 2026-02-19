@@ -48,13 +48,13 @@ export default function NewStorePage() {
           <ChevronLeft className="w-4 h-4 mr-1" />
           Volver a Tiendas
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Registrar Nuevo Comercio</h1>
-        <p className="text-gray-500 mt-2">Ingresa los detalles básicos del nuevo comercio.</p>
+        <h1 className="text-3xl font-bold text-gray-900">Registrar Nuevo Afiliado</h1>
+        <p className="text-gray-500 mt-2">Ingresa los detalles básicos del nuevo afiliado.</p>
       </div>
 
       <form action={createStore} className="bg-white shadow-sm rounded-xl border border-gray-100 p-6 space-y-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Comercio</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Afiliado</label>
           <input 
             type="text" 
             name="name" 

@@ -201,7 +201,7 @@ export default function LoginPage() {
 
           <div className="text-center pt-2">
             <p className="text-sm text-gray-600">
-              ¿Tienes un comercio y quieres vender con nosotros?
+              ¿Tienes un negocio y quieres vender con nosotros?
             </p>
             <Link href="/register" className="mt-2 inline-block font-medium text-papola-green hover:text-papola-green-80 transition-colors">
               Registra tu negocio aquí &rarr;

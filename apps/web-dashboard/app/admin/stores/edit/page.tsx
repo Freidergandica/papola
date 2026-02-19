@@ -74,7 +74,7 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
           <ChevronLeft className="w-4 h-4 mr-1" />
           Volver a Tiendas
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Editar Comercio</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Editar Afiliado</h1>
         <p className="text-gray-500 mt-2">Modifica los datos de <strong>{store.name}</strong>.</p>
       </div>
 
@@ -82,7 +82,7 @@ export default async function EditStorePage({ searchParams }: { searchParams: Pr
         <input type="hidden" name="store_id" value={store.id} />
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Comercio</label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Afiliado</label>
           <input
             type="text"
             name="name"

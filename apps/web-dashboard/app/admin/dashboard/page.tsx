@@ -97,7 +97,7 @@ export default async function AdminDashboard() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-bold text-gray-500 truncate">Comercios Activos</dt>
+                  <dt className="text-sm font-bold text-gray-500 truncate">Afiliados Activos</dt>
                   <dd>
                     <div className="text-2xl font-bold text-gray-900">
                       {storesCount || 0}

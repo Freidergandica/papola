@@ -28,7 +28,7 @@ export default async function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Configuración de Mi Tienda</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Gestiona la información de tu comercio, logo y horarios.
+          Gestiona la información de tu negocio, logo y horarios.
         </p>
       </div>
 

@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           color="bg-blue-500" 
         />
         <KpiCard 
-          title="Comercios" 
+          title="Afiliados" 
           value={storeCount?.toString() || '0'} 
           icon={TrendingUp} 
           color="bg-orange-500" 
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
         {/* Top Stores Table */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Top Comercios</h3>
+            <h3 className="text-lg font-bold text-gray-900">Top Afiliados</h3>
             <button className="text-sm text-papola-blue font-medium hover:text-papola-blue-80">Ver todos</button>
           </div>
           
@@ -81,7 +81,7 @@ export default async function DashboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-left border-b border-gray-100">
-                  <th className="pb-3 text-sm font-semibold text-gray-500">Comercio</th>
+                  <th className="pb-3 text-sm font-semibold text-gray-500">Afiliado</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500">Calificacion</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500">Estado</th>
                   <th className="pb-3 text-sm font-semibold text-gray-500 text-right">Ventas</th>
