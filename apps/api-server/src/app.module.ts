@@ -11,6 +11,7 @@ import { DealsModule } from './deals/deals.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { R4WebhooksModule } from './r4-webhooks/r4-webhooks.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { R4WebhooksModule } from './r4-webhooks/r4-webhooks.module';
     OrdersModule,
     PaymentsModule,
     R4WebhooksModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

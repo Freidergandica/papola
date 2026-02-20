@@ -10,7 +10,7 @@ import { apiGet, apiPost } from '../lib/api';
 import { shadowStyles } from '../styles/shadows';
 import { AddressPicker } from '../components/AddressPicker';
 
-type PaymentMethod = 'pago_movil' | 'c2p' | 'cash';
+type PaymentMethod = 'pago_movil' | 'c2p';
 
 export default function CheckoutScreen() {
   const { items, total, appliedDeal, discountAmount, clearCart, applyDeal } = useCart();
@@ -144,10 +144,12 @@ export default function CheckoutScreen() {
         });
 
         clearCart();
+        try { router.dismissAll(); } catch {}
         router.replace({
           pathname: '/payment-waiting',
           params: {
             orderId: order.id,
+            customerId: user.id,
             amountVes: totalVES.toFixed(2),
             cedula: cedula.trim(),
             totalUsd: finalTotal.toFixed(2),
@@ -189,7 +191,10 @@ export default function CheckoutScreen() {
         Alert.alert(
           'Pedido realizado',
           'Tu pedido ha sido creado exitosamente. Recibirás actualizaciones sobre su estado.',
-          [{ text: 'Ver mis pedidos', onPress: () => router.replace('/(tabs)/orders') }],
+          [{ text: 'Ver mis pedidos', onPress: () => {
+            try { router.dismissAll(); } catch {}
+            router.replace('/(tabs)/orders');
+          } }],
         );
       }
     } catch (error) {
@@ -203,7 +208,6 @@ export default function CheckoutScreen() {
   const paymentMethods: { key: PaymentMethod; label: string; icon: string }[] = [
     { key: 'pago_movil', label: 'Pago Móvil', icon: 'phone-portrait-outline' },
     { key: 'c2p', label: 'C2P', icon: 'card-outline' },
-    { key: 'cash', label: 'Efectivo', icon: 'cash-outline' },
   ];
 
   return (

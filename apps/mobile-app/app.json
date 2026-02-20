@@ -59,6 +59,12 @@
         {
           "locationWhenInUsePermission": "Papola necesita tu ubicación para mostrarte tiendas cercanas y facilitar la entrega de tus pedidos."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": []
+        }
       ]
     ],
     "extra": {

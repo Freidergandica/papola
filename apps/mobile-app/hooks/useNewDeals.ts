@@ -18,7 +18,7 @@ export function useNewDeals(onNewDeal: (deal: Deal) => void) {
           if (payload.new.is_active && payload.new.is_approved) {
             const { data } = await supabase
               .from('deals')
-              .select('*, stores(id, name, logo_url)')
+              .select('*, stores(id, name, image_url)')
               .eq('id', payload.new.id)
               .single();
 

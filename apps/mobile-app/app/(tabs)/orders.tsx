@@ -1,8 +1,8 @@
 import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { Order } from '../../types';
 import { useActiveOrdersUpdates } from '../../hooks/useActiveOrdersUpdates';
@@ -31,7 +31,6 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-
   const fetchOrders = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +43,7 @@ export default function OrdersScreen() {
 
       const { data, error } = await supabase
         .from('orders')
-        .select('*, stores(id, name, logo_url), order_items(*, products(name, image_url))')
+        .select('*, stores(id, name, image_url), order_items(*, products(name, image_url))')
         .eq('customer_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -59,9 +58,11 @@ export default function OrdersScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+    }, [])
+  );
 
   // Real-time updates for ALL customer orders
   const handleOrderUpdate = useCallback((orderId: string, updatedFields: Record<string, unknown>) => {

@@ -1,9 +1,11 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { useOrderUpdates } from '../hooks/useOrderUpdates';
+import { apiPost } from '../lib/api';
 import { shadowStyles } from '../styles/shadows';
 
 const EXPIRATION_SECONDS = 5 * 60;
@@ -19,6 +21,7 @@ const steps: { status: PaymentStatus; label: string }[] = [
 export default function PaymentWaitingScreen() {
   const params = useLocalSearchParams<{
     orderId: string;
+    customerId: string;
     amountVes: string;
     cedula: string;
     totalUsd: string;
@@ -27,21 +30,33 @@ export default function PaymentWaitingScreen() {
 
   const [currentStatus, setCurrentStatus] = useState<PaymentStatus>('pending_payment');
   const [secondsLeft, setSecondsLeft] = useState(EXPIRATION_SECONDS);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval>>(null);
+
+  const copyToClipboard = async (value: string, field: string) => {
+    await Clipboard.setStringAsync(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
+
+  const clearTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
 
   // Countdown timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timerRef.current);
+          clearTimer();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timerRef.current);
+    return clearTimer;
   }, []);
 
   // Realtime status updates
@@ -51,7 +66,7 @@ export default function PaymentWaitingScreen() {
       setCurrentStatus(newStatus as PaymentStatus);
     }
     if (newStatus === 'accepted' || newStatus === 'expired') {
-      clearInterval(timerRef.current);
+      clearTimer();
     }
   }, []);
 
@@ -64,6 +79,35 @@ export default function PaymentWaitingScreen() {
     }
   }, [secondsLeft, currentStatus]);
 
+  const handleCancel = () => {
+    Alert.alert(
+      'Cancelar pago',
+      '¿Estás seguro que deseas cancelar este pedido?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelling(true);
+            try {
+              await apiPost(`/orders/${params.orderId}/cancel`, {
+                customer_id: params.customerId,
+              });
+              clearTimer();
+              setCurrentStatus('expired');
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo cancelar el pedido');
+            } finally {
+              setCancelling(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const isCancelled = currentStatus === 'expired';
   const isFinished = currentStatus === 'accepted' || currentStatus === 'expired';
   const isSuccess = currentStatus === 'accepted';
   const isExpired = currentStatus === 'expired';
@@ -77,6 +121,7 @@ export default function PaymentWaitingScreen() {
     const stepIdx = statusOrder.indexOf(stepStatus);
 
     if (isExpired) return 'expired';
+    if (isSuccess) return 'done';
     if (stepIdx < currentIdx) return 'done';
     if (stepIdx === currentIdx) return 'active';
     return 'pending';
@@ -119,18 +164,46 @@ export default function PaymentWaitingScreen() {
             </Text>
           </View>
 
-          {/* Payment Info Card */}
-          <View className="bg-gray-50 rounded-2xl p-5 mb-6" style={shadowStyles.sm}>
-            <View className="flex-row justify-between mb-3">
-              <Text className="text-sm text-gray-500">Monto en Bs.</Text>
-              <Text className="text-lg font-bold text-gray-900">Bs. {params.amountVes}</Text>
+          {/* Destination Account Card */}
+          {!isFinished && (
+            <View className="bg-papola-blue/5 border border-papola-blue/20 rounded-2xl p-5 mb-4" style={shadowStyles.sm}>
+              <Text className="text-xs font-bold text-papola-blue mb-3 uppercase">Enviar Pago Móvil a</Text>
+              <TouchableOpacity className="flex-row justify-between items-center mb-2" onPress={() => copyToClipboard('04121917614', 'phone')}>
+                <Text className="text-sm text-gray-500">Teléfono</Text>
+                <View className="flex-row items-center">
+                  <Text className="text-sm font-bold text-gray-900 mr-2">0412-1917614</Text>
+                  <Ionicons name={copiedField === 'phone' ? 'checkmark-circle' : 'copy-outline'} size={16} color={copiedField === 'phone' ? '#22c55e' : '#9ca3af'} />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity className="flex-row justify-between items-center mb-2" onPress={() => copyToClipboard('15368907', 'cedula')}>
+                <Text className="text-sm text-gray-500">Cédula</Text>
+                <View className="flex-row items-center">
+                  <Text className="text-sm font-bold text-gray-900 mr-2">V-15368907</Text>
+                  <Ionicons name={copiedField === 'cedula' ? 'checkmark-circle' : 'copy-outline'} size={16} color={copiedField === 'cedula' ? '#22c55e' : '#9ca3af'} />
+                </View>
+              </TouchableOpacity>
+              <View className="flex-row justify-between mb-2">
+                <Text className="text-sm text-gray-500">Banco</Text>
+                <Text className="text-sm font-bold text-gray-900">R4 Micro Financiero (0169)</Text>
+              </View>
+              <TouchableOpacity className="flex-row justify-between items-center" onPress={() => copyToClipboard(params.amountVes || '', 'amount')}>
+                <Text className="text-sm text-gray-500">Monto exacto</Text>
+                <View className="flex-row items-center">
+                  <Text className="text-lg font-bold text-papola-blue mr-2">Bs. {params.amountVes}</Text>
+                  <Ionicons name={copiedField === 'amount' ? 'checkmark-circle' : 'copy-outline'} size={16} color={copiedField === 'amount' ? '#22c55e' : '#9ca3af'} />
+                </View>
+              </TouchableOpacity>
             </View>
-            <View className="flex-row justify-between mb-3">
+          )}
+
+          {/* Order Details Card */}
+          <View className="bg-gray-50 rounded-2xl p-5 mb-6" style={shadowStyles.sm}>
+            <View className="flex-row justify-between mb-2">
               <Text className="text-sm text-gray-500">Total USD</Text>
               <Text className="text-sm font-medium text-gray-700">${params.totalUsd}</Text>
             </View>
-            <View className="flex-row justify-between mb-3">
-              <Text className="text-sm text-gray-500">Cédula</Text>
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-sm text-gray-500">Tu cédula</Text>
               <Text className="text-sm font-medium text-gray-700">{params.cedula}</Text>
             </View>
             <View className="flex-row justify-between">
@@ -195,14 +268,27 @@ export default function PaymentWaitingScreen() {
             })}
           </View>
 
-          {/* Action Button */}
-          {isFinished && (
+          {/* Action Buttons */}
+          {isFinished ? (
             <TouchableOpacity
               className={`py-4 rounded-2xl items-center ${isSuccess ? 'bg-green-500' : 'bg-papola-blue'}`}
               style={shadowStyles.blue}
-              onPress={() => router.replace('/(tabs)/orders')}
+              onPress={() => {
+                try { router.dismissAll(); } catch {}
+                router.replace('/(tabs)/orders');
+              }}
             >
               <Text className="text-white font-bold text-lg">Ver mis pedidos</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              className="py-3 items-center"
+              onPress={handleCancel}
+              disabled={cancelling || currentStatus !== 'pending_payment'}
+            >
+              <Text className="text-red-500 font-medium text-sm">
+                {cancelling ? 'Cancelando...' : 'Cancelar pedido'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

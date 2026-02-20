@@ -210,7 +210,23 @@ export default function StoreDetailsScreen() {
                 <Text className="text-gray-500 text-sm mb-2" numberOfLines={2}>
                   {product.description}
                 </Text>
-                <Text className="text-papola-blue-80 font-bold">${product.price.toFixed(2)}</Text>
+                {product.original_price && product.original_price > product.price ? (
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-gray-400 text-sm line-through">
+                      ${product.original_price.toFixed(2)}
+                    </Text>
+                    <Text className="text-papola-blue-80 font-bold">
+                      ${product.price.toFixed(2)}
+                    </Text>
+                    <View className="bg-red-500 rounded-full px-2 py-0.5">
+                      <Text className="text-white text-[10px] font-bold">
+                        -{Math.round((1 - product.price / product.original_price) * 100)}%
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text className="text-papola-blue-80 font-bold">${product.price.toFixed(2)}</Text>
+                )}
                 {addedProductId === product.id && (
                   <Text className="text-green-600 text-xs font-bold mt-1">Agregado al carrito</Text>
                 )}

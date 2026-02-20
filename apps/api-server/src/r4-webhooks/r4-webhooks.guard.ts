@@ -43,9 +43,10 @@ export class R4WebhooksGuard implements CanActivate {
       throw new R4StatusException(endpoint);
     }
 
+    // TODO: Re-enable IP whitelist after confirming R4's production IPs
+    // For now, log the IP so we can capture R4's real IP and add it later
     if (!IP_WHITE_LIST.includes(clientIp)) {
-      this.logger.warn(`Authorization failed — IP not whitelisted: ${clientIp}`);
-      throw new R4StatusException(endpoint);
+      this.logger.warn(`IP not in whitelist (allowed for now): ${clientIp}`);
     }
 
     this.logger.log('Authorization successful');

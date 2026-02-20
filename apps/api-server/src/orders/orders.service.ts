@@ -71,10 +71,11 @@ export class OrdersService {
     }
 
     const totalAmount = Math.max(0, subtotal - discountAmount);
-    const amountInVes =
-      order.payment_currency === 'VES' && order.exchange_rate
-        ? totalAmount * order.exchange_rate
-        : undefined;
+    // Siempre calcular amount_in_ves cuando hay exchange_rate
+    // (el checkout envía payment_currency='USD' pero R4 necesita el monto en Bs para hacer match)
+    const amountInVes = order.exchange_rate
+      ? Math.round(totalAmount * order.exchange_rate * 100) / 100
+      : undefined;
 
     // Determine initial status: pago_movil orders start as pending_payment
     const isPagoMovil = order.payment_method === 'pago_movil';
@@ -127,9 +128,32 @@ export class OrdersService {
       await this.dealsService.redeem(dealId, order.customer_id, createdOrder.id);
     }
 
+    // Decrement stock for products that have stock tracking
+    for (const item of items) {
+      const { data: product } = await this.supabase
+        .getClient()
+        .from('products')
+        .select('stock')
+        .eq('id', item.product_id)
+        .single();
+
+      if (product && product.stock !== null && product.stock !== undefined && product.stock > 0) {
+        if (product.stock < item.quantity) {
+          throw new BadRequestException(
+            `Stock insuficiente para el producto ${item.product_id}`,
+          );
+        }
+        await this.supabase
+          .getClient()
+          .from('products')
+          .update({ stock: product.stock - item.quantity })
+          .eq('id', item.product_id);
+      }
+    }
+
     // Schedule expiration for pago_movil orders (5 min timeout)
     if (isPagoMovil) {
-      this.orderExpirationService.scheduleExpiration(createdOrder.id);
+      await this.orderExpirationService.scheduleExpiration(createdOrder.id);
       this.logger.log(`Order ${createdOrder.id} created as pending_payment with 5min expiration`);
     }
 
@@ -183,5 +207,47 @@ export class OrdersService {
 
     if (error) throw new NotFoundException('Order not found');
     return data;
+  }
+
+  async cancelOrder(orderId: string, customerId: string) {
+    const { data: order, error } = await this.supabase
+      .getClient()
+      .from('orders')
+      .select('id, status, customer_id')
+      .eq('id', orderId)
+      .single();
+
+    if (error || !order) throw new NotFoundException('Order not found');
+
+    if (order.customer_id !== customerId) {
+      throw new BadRequestException('Solo puedes cancelar tus propias órdenes');
+    }
+
+    if (order.status !== 'pending_payment') {
+      throw new BadRequestException(
+        'Solo se pueden cancelar órdenes pendientes de pago',
+      );
+    }
+
+    // Cancel expiration timer
+    await this.orderExpirationService.cancelExpiration(orderId);
+
+    // Update status
+    const { data: updated, error: updateError } = await this.supabase
+      .getClient()
+      .from('orders')
+      .update({ status: 'cancelled', expires_at: null })
+      .eq('id', orderId)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Restore stock
+    await this.orderExpirationService.restoreStock(orderId);
+
+    this.logger.log(`Order ${orderId} cancelled by customer ${customerId}`);
+
+    return updated;
   }
 }

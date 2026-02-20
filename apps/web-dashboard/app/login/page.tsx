@@ -13,8 +13,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [resetMode, setResetMode] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resetEmail) return
+    setLoading(true)
+    setError(null)
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+      })
+      if (resetError) throw resetError
+      setResetSent(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,6 +142,73 @@ export default function LoginPage() {
           </p>
         </div>
         
+        {resetMode ? (
+          resetSent ? (
+            <div className="mt-8 space-y-6 text-center">
+              <div className="rounded-md bg-green-50 p-4">
+                <p className="text-sm text-green-700">
+                  Revisa tu correo electrónico. Te enviamos un enlace para restablecer tu contraseña.
+                </p>
+              </div>
+              <button
+                onClick={() => { setResetMode(false); setResetSent(false); setError(null) }}
+                className="text-sm font-medium text-papola-blue hover:text-papola-blue-80"
+              >
+                Volver al inicio de sesión
+              </button>
+            </div>
+          ) : (
+            <form className="mt-8 space-y-6" onSubmit={handlePasswordReset}>
+              <div>
+                <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700">
+                  Correo Electrónico
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="resetEmail"
+                    type="email"
+                    required
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="block w-full appearance-none rounded-lg border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-400 shadow-sm focus:border-papola-blue focus:outline-none focus:ring-papola-blue sm:text-sm"
+                    placeholder="tu@correo.com"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="rounded-md bg-red-50 p-4">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full justify-center rounded-lg border border-transparent bg-papola-blue px-4 py-3 text-sm font-medium text-white shadow-sm hover:bg-papola-blue-80 focus:outline-none focus:ring-2 focus:ring-papola-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  'Enviar enlace de recuperación'
+                )}
+              </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => { setResetMode(false); setError(null) }}
+                  className="text-sm font-medium text-papola-blue hover:text-papola-blue-80"
+                >
+                  Volver al inicio de sesión
+                </button>
+              </div>
+            </form>
+          )
+        ) : (
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
             <div>
@@ -143,9 +231,18 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { setResetEmail(email); setResetMode(true); setError(null) }}
+                  className="text-xs text-gray-400 hover:text-papola-blue transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div className="mt-1 relative">
                 <input
                   id="password"
@@ -208,6 +305,7 @@ export default function LoginPage() {
             </Link>
           </div>
         </form>
+        )}
       </div>
     </div>
   )

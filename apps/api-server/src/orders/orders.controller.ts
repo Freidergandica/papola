@@ -48,4 +48,12 @@ export class OrdersController {
   ) {
     return this.ordersService.updateStatus(id, body.status);
   }
+
+  @Post(':id/cancel')
+  cancel(
+    @Param('id') id: string,
+    @Body() body: { customer_id: string },
+  ) {
+    return this.ordersService.cancelOrder(id, body.customer_id);
+  }
 }

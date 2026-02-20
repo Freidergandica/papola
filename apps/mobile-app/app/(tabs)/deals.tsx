@@ -22,7 +22,7 @@ export default function DealsScreen() {
       // Featured deals
       const { data: featured } = await supabase
         .from('deals')
-        .select('*, stores(id, name, logo_url)')
+        .select('*, stores(id, name, image_url)')
         .eq('is_active', true)
         .eq('is_approved', true)
         .eq('is_featured', true)
@@ -33,7 +33,7 @@ export default function DealsScreen() {
       // Flash deals
       const { data: flash } = await supabase
         .from('deals')
-        .select('*, stores(id, name, logo_url)')
+        .select('*, stores(id, name, image_url)')
         .eq('is_active', true)
         .eq('is_approved', true)
         .eq('is_flash_deal', true)
@@ -44,7 +44,7 @@ export default function DealsScreen() {
       // Regular deals
       const { data: regular } = await supabase
         .from('deals')
-        .select('*, stores(id, name, logo_url)')
+        .select('*, stores(id, name, image_url)')
         .eq('is_active', true)
         .eq('is_approved', true)
         .eq('is_featured', false)

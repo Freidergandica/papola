@@ -2,11 +2,13 @@ import "../global.css";
 import { Stack } from "expo-router";
 import { CartProvider } from "../context/CartContext";
 import { AddressProvider } from "../context/AddressContext";
+import { PushNotificationRegistrar } from "../components/PushNotificationRegistrar";
 
 export default function Layout() {
   return (
     <CartProvider>
       <AddressProvider>
+        <PushNotificationRegistrar />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />

@@ -19,6 +19,8 @@ export default function LoginScreen() {
   const [waitingForOtp, setWaitingForOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [splashDone, setSplashDone] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   // Splash animation values (built-in Animated API)
   const logoScale = useRef(new RNAnimated.Value(0.3)).current;
@@ -33,13 +35,21 @@ export default function LoginScreen() {
   const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem('@papola/onboarding_completed').then((value) => {
-      if (!value) {
-        router.replace('/onboarding');
-      } else {
-        setOnboardingChecked(true);
+    const init = async () => {
+      const onboarded = await AsyncStorage.getItem('@papola/onboarding_completed');
+      if (!onboarded) {
+        setTimeout(() => router.replace('/onboarding'), 0);
+        return;
       }
-    });
+      // If user already has a valid session, skip login
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setTimeout(() => router.replace('/(tabs)/home'), 0);
+        return;
+      }
+      setOnboardingChecked(true);
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -127,6 +137,31 @@ export default function LoginScreen() {
       });
       if (error) throw error;
       router.replace('/(tabs)/home');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Password Reset
+  const handlePasswordReset = async () => {
+    const targetEmail = resetEmail || email;
+    if (!targetEmail) {
+      Alert.alert('Error', 'Ingresa tu correo electrónico');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
+        redirectTo: 'https://web.papolaapp.com/auth/callback?next=/auth/reset-password',
+      });
+      if (error) throw error;
+      Alert.alert(
+        'Correo enviado',
+        'Revisa tu bandeja de entrada para restablecer tu contraseña.',
+        [{ text: 'OK', onPress: () => setResetMode(false) }]
+      );
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
@@ -227,6 +262,32 @@ export default function LoginScreen() {
 
           <View className="gap-y-4">
             {authMethod === 'email' ? (
+              resetMode ? (
+                <>
+                  <View>
+                    <Text className="text-gray-700 font-medium mb-2 ml-1">Correo Electrónico</Text>
+                    <TextInput
+                      className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-4 text-gray-800 text-base"
+                      placeholder="hola@papola.app"
+                      value={resetEmail}
+                      onChangeText={setResetEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  </View>
+                  <TouchableOpacity
+                    className="bg-papola-blue py-4 rounded-2xl items-center mt-2"
+                    style={shadowStyles.blue}
+                    onPress={handlePasswordReset}
+                    disabled={loading}
+                  >
+                    {loading ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">Enviar enlace</Text>}
+                  </TouchableOpacity>
+                  <TouchableOpacity className="items-center mt-2" onPress={() => setResetMode(false)}>
+                    <Text className="text-papola-blue font-medium">Volver al inicio de sesión</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
               <>
                 <View>
                   <Text className="text-gray-700 font-medium mb-2 ml-1">Correo Electrónico</Text>
@@ -266,7 +327,13 @@ export default function LoginScreen() {
                 >
                   {loading ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">{isSignUp ? 'Registrarse' : 'Iniciar Sesión'}</Text>}
                 </TouchableOpacity>
+                {!isSignUp && (
+                  <TouchableOpacity className="items-center" onPress={() => { setResetEmail(email); setResetMode(true); }}>
+                    <Text className="text-gray-400 text-sm">¿Olvidaste tu contraseña?</Text>
+                  </TouchableOpacity>
+                )}
               </>
+              )
             ) : (
               <>
                 {!waitingForOtp ? (

@@ -16,10 +16,27 @@ interface Notification {
 export default function OrderNotification({ storeId }: { storeId: string | null }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
 
+  // Request browser notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
   useEffect(() => {
     if (!storeId) return
 
     const supabase = createClient()
+
+    const sendBrowserNotification = (title: string, body: string) => {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new window.Notification(title, {
+          body,
+          icon: '/logo.png',
+          badge: '/logo.png',
+        })
+      }
+    }
 
     const addNotification = (notification: Notification) => {
       setNotifications(prev => [notification, ...prev].slice(0, 5))
@@ -28,6 +45,11 @@ export default function OrderNotification({ storeId }: { storeId: string | null 
         const audio = new Audio('/notification.mp3')
         audio.play().catch(() => {})
       } catch {}
+
+      // Browser push notification (works even if tab is not focused)
+      const title = notification.type === 'payment_confirmed' ? 'Pago Confirmado' : 'Nuevo Pedido'
+      const body = `${notification.customerName} — $${notification.total.toFixed(2)}`
+      sendBrowserNotification(title, body)
 
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n.id !== notification.id))

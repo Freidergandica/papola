@@ -60,6 +60,7 @@ export default function ProfileScreen() {
         onPress: async () => {
           setLoggingOut(true);
           await supabase.auth.signOut();
+          try { router.dismissAll(); } catch {}
           router.replace('/');
         },
       },

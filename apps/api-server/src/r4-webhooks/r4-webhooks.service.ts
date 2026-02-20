@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { SSEService } from '../common/sse.service';
 import { OrderExpirationService } from './order-expiration.service';
+import { PushNotificationService } from '../notifications/push-notification.service';
 import type {
   ConsultaRequest,
   ConsultaResponse,
@@ -19,6 +20,7 @@ export class R4WebhooksService {
     private readonly supabase: SupabaseService,
     private readonly sseService: SSEService,
     private readonly orderExpirationService: OrderExpirationService,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
   /**
@@ -120,9 +122,10 @@ export class R4WebhooksService {
 
     const supabase = this.supabase.getClient();
 
-    this.logger.log(`[R4 Notification Hook] Searching for orders with: idCard=${data.IdComercio}, status=authorized, payment_method=pago_movil`);
+    this.logger.log(`[R4 Notification Hook] Searching for orders with: IdComercio(=IdCliente)=${data.IdComercio}, status=authorized, payment_method=pago_movil`);
 
-    // Buscar órdenes autorizadas con la cédula del comercio
+    // IdComercio en la notificación = IdCliente de la consulta = cédula del cliente que pagó
+    // (confirmado por R4: "El campo de IdCliente de la consulta se convierte en el IdComercio en la notificacion")
     const { data: orders, error: orderError } = await supabase
       .from('orders')
       .select('id, amount_in_ves, store_id')
@@ -245,14 +248,24 @@ export class R4WebhooksService {
       });
 
       this.logger.log(`[R4 Notification Hook] Payment updated successfully: mobilePaymentRef=${data.Referencia}, phone=${data.TelefonoEmisor}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`[R4 Notification Hook] Error processing payment: ${error?.message ?? error}`);
       this.logger.error(`[R4 Notification Hook] Error stack: ${error?.stack}`);
+      return { abono: false };
     }
 
-    // TODO: aqui se debe enviar notificacion de pago hecho (push notification a la tienda)
-    // Legacy usaba Firebase: this.orderService.sendNewOrderNotification(order, order.store)
-    // Pendiente: implementar Expo Push Notifications
+    // Push notification al dueño de la tienda
+    try {
+      const numAmount = Number(amount);
+      await this.pushNotificationService.sendToStoreOwner(
+        order.store_id,
+        'Nuevo pago recibido',
+        `Se ha confirmado un pago de Bs. ${numAmount.toFixed(2)} en tu tienda`,
+        { orderId: order.id, event: 'payment.accepted' },
+      );
+    } catch (pushError: any) {
+      this.logger.warn(`[R4 Notification Hook] Push notification failed (non-blocking): ${pushError?.message}`);
+    }
 
     this.logger.log('[R4 Notification Hook] Emitting SSE event and completing process');
 

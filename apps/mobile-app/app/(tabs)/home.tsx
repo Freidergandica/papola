@@ -63,7 +63,7 @@ export default function HomeScreen() {
           .order('rating', { ascending: false }),
         supabase
           .from('deals')
-          .select('*, stores(id, name, logo_url)')
+          .select('*, stores(id, name, image_url)')
           .eq('is_active', true)
           .eq('is_approved', true)
           .eq('is_featured', true)
