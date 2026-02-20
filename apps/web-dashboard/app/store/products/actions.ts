@@ -29,12 +29,29 @@ export async function deleteProduct(productId: string): Promise<{ error?: string
       return { error: 'Producto no encontrado o no tienes permiso.' }
     }
 
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId)
+    // Check if product has order_items (can't hard-delete if so)
+    const { count } = await supabase
+      .from('order_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('product_id', productId)
 
-    if (error) return { error: error.message }
+    if (count && count > 0) {
+      // Soft-delete: mark as unavailable (preserves order history)
+      const { error } = await supabase
+        .from('products')
+        .update({ is_available: false })
+        .eq('id', productId)
+
+      if (error) return { error: error.message }
+    } else {
+      // Hard-delete: no orders reference this product
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+
+      if (error) return { error: error.message }
+    }
 
     revalidatePath('/store/products')
     return {}
