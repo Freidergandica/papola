@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   // Primary: bcv-api.rafnixg.dev (free, no auth)
   try {
     const res = await fetch('https://bcv-api.rafnixg.dev/rates/', {
-      next: { revalidate: 300 }, // cache 5 min
+      cache: 'no-store',
     })
     if (res.ok) {
       const data = await res.json()
@@ -19,7 +21,7 @@ export async function GET() {
   // Fallback: pydolarve
   try {
     const res = await fetch('https://pydolarve.org/api/v2/dollar?monitor=bcv', {
-      next: { revalidate: 300 },
+      cache: 'no-store',
     })
     if (res.ok) {
       const data = await res.json()
