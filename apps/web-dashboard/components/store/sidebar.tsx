@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ShoppingBag, Settings, Store, LogOut, Package, Tag, MessageCircle, MoreHorizontal, X } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Store, LogOut, Package, Tag, MessageCircle, MoreHorizontal, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -18,7 +18,24 @@ const navigation = [
   { name: 'Mi Negocio', href: '/store/settings', icon: Store, mobileMain: false },
 ]
 
-export default function StoreSidebar() {
+function BadgeCount({ count }: { count: number }) {
+  const label = count > 20 ? '+20' : String(count)
+  return (
+    <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full">
+      {label}
+    </span>
+  )
+}
+
+function MobileBadge({ count }: { count: number }) {
+  return (
+    <span className="absolute -top-1.5 -right-2.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+      {count > 20 ? '+20' : count}
+    </span>
+  )
+}
+
+export default function StoreSidebar({ badges = {} }: { badges?: Record<string, number> }) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -33,6 +50,7 @@ export default function StoreSidebar() {
   const mobileMore = navigation.filter(item => !item.mobileMain)
   const hasMore = mobileMore.length > 0
   const moreHasActive = mobileMore.some(item => pathname.startsWith(item.href))
+  const moreBadgeTotal = mobileMore.reduce((sum, item) => sum + (badges[item.href] || 0), 0)
 
   return (
     <>
@@ -73,6 +91,7 @@ export default function StoreSidebar() {
                       aria-hidden="true"
                     />
                     {item.name}
+                    {badges[item.href] ? <BadgeCount count={badges[item.href]} /> : null}
                   </Link>
                 )
               })}
@@ -124,6 +143,11 @@ export default function StoreSidebar() {
                   >
                     <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
                     {item.name}
+                    {badges[item.href] ? (
+                      <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                        {badges[item.href] > 20 ? '+20' : badges[item.href]}
+                      </span>
+                    ) : null}
                   </Link>
                 )
               })}
@@ -154,7 +178,10 @@ export default function StoreSidebar() {
                   isActive ? 'text-papola-blue' : 'text-gray-400'
                 )}
               >
-                <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
+                <div className="relative">
+                  <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
+                  {badges[item.href] ? <MobileBadge count={badges[item.href]} /> : null}
+                </div>
                 {item.name}
               </Link>
             )
@@ -167,7 +194,10 @@ export default function StoreSidebar() {
                 moreHasActive || moreOpen ? 'text-papola-blue' : 'text-gray-400'
               )}
             >
-              <MoreHorizontal className={cn('h-5 w-5', moreHasActive || moreOpen ? 'text-papola-blue' : 'text-gray-400')} />
+              <div className="relative">
+                <MoreHorizontal className={cn('h-5 w-5', moreHasActive || moreOpen ? 'text-papola-blue' : 'text-gray-400')} />
+                {moreBadgeTotal > 0 && <MobileBadge count={moreBadgeTotal} />}
+              </div>
               Más
             </button>
           )}
