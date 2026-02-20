@@ -1,5 +1,6 @@
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/admin/sidebar'
 import Header from '@/components/admin/header'
@@ -22,10 +23,26 @@ export default async function AdminLayout({
   const role = profile?.role
   if (role !== 'admin' && role !== 'sales_manager') redirect('/login')
 
+  // Fetch notification counts
+  const admin = createAdminClient()
+  const [ordersResult, supportResult, bankResult] = await Promise.all([
+    admin.from('orders').select('id', { count: 'exact', head: true })
+      .in('status', ['pending', 'accepted', 'preparing', 'ready', 'delivering']),
+    admin.from('support_tickets').select('id', { count: 'exact', head: true })
+      .in('status', ['open', 'in_progress']),
+    admin.from('bank_account_changes').select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+  ])
+
+  const badges: Record<string, number> = {}
+  if (ordersResult.count) badges['/admin/orders'] = ordersResult.count
+  if (supportResult.count) badges['/admin/support'] = supportResult.count
+  if (bankResult.count) badges['/admin/bank-changes'] = bankResult.count
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar role={role} />
+      <Sidebar role={role} badges={badges} />
 
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col overflow-hidden">

@@ -17,7 +17,16 @@ const allNavigation = [
   { name: 'Config', href: '/admin/settings', icon: Settings, roles: ['admin'] },
 ]
 
-export default function Sidebar({ role = 'admin' }: { role?: string }) {
+function BadgeCount({ count }: { count: number }) {
+  const label = count > 20 ? '+20' : String(count)
+  return (
+    <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full">
+      {label}
+    </span>
+  )
+}
+
+export default function Sidebar({ role = 'admin', badges = {} }: { role?: string; badges?: Record<string, number> }) {
   const pathname = usePathname()
   const navigation = allNavigation.filter(item => item.roles.includes(role))
 
@@ -66,6 +75,7 @@ export default function Sidebar({ role = 'admin' }: { role?: string }) {
                         aria-hidden="true"
                       />
                       {item.name}
+                      {badges[item.href] ? <BadgeCount count={badges[item.href]} /> : null}
                     </Link>
                   )
                 })}
@@ -85,11 +95,18 @@ export default function Sidebar({ role = 'admin' }: { role?: string }) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-xs font-medium transition-colors',
+                  'flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-xs font-medium transition-colors relative',
                   isActive ? 'text-papola-blue' : 'text-gray-400'
                 )}
               >
-                <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
+                <div className="relative">
+                  <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
+                  {badges[item.href] ? (
+                    <span className="absolute -top-1.5 -right-2.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
+                      {badges[item.href] > 20 ? '+20' : badges[item.href]}
+                    </span>
+                  ) : null}
+                </div>
                 {item.name}
               </Link>
             )
