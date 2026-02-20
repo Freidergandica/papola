@@ -21,6 +21,39 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   closed: { label: 'Cerrado', color: '#6b7280' },
 };
 
+function MessageChecks({ readAt }: { readAt: string | null }) {
+  const color = readAt ? '#3b82f6' : '#9ca3af';
+  return (
+    <View style={{ flexDirection: 'row', marginLeft: 4 }}>
+      <Ionicons name="checkmark-done" size={14} color={color} />
+    </View>
+  );
+}
+
+function SingleCheck() {
+  return (
+    <View style={{ flexDirection: 'row', marginLeft: 4 }}>
+      <Ionicons name="checkmark" size={14} color="#9ca3af" />
+    </View>
+  );
+}
+
+function TypingBubble() {
+  return (
+    <View className="mb-3 max-w-[80%] self-start">
+      <Text className="text-[10px] text-gray-400 font-bold mb-0.5 ml-1">Soporte</Text>
+      <View className="px-4 py-2.5 rounded-2xl bg-white border border-gray-100 rounded-bl-sm flex-row items-center">
+        <Text className="text-sm text-gray-500 mr-1">Escribiendo</Text>
+        <View className="flex-row items-center" style={{ gap: 2 }}>
+          <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export default function SupportChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
@@ -29,7 +62,22 @@ export default function SupportChatScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [optimisticTexts, setOptimisticTexts] = useState<string[]>([]);
   const flatListRef = useRef<FlatList>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingBroadcast = useRef<number>(0);
+
+  // Mark other party's messages as read
+  const markAsRead = useCallback(async () => {
+    if (!id || !userId) return;
+    await supabase
+      .from('support_messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('ticket_id', id)
+      .neq('sender_id', userId)
+      .is('read_at', null);
+  }, [id, userId]);
 
   useEffect(() => {
     if (!id) return;
@@ -60,14 +108,63 @@ export default function SupportChatScreen() {
     fetchData();
   }, [id]);
 
+  // Mark as read after loading messages and userId
+  useEffect(() => {
+    if (!loading && userId && messages.length > 0) {
+      markAsRead();
+    }
+  }, [loading, userId, messages.length, markAsRead]);
+
   const handleNewMessage = useCallback((msg: SupportMessage) => {
     setMessages(prev => {
       if (prev.some(m => m.id === msg.id)) return prev;
       return [...prev, msg];
     });
+    setOptimisticTexts([]);
+    // If from other party, mark as read immediately
+    if (msg.sender_id !== userId) {
+      supabase
+        .from('support_messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', msg.id)
+        .then();
+    }
+  }, [userId]);
+
+  const handleMessageUpdate = useCallback((updated: SupportMessage) => {
+    setMessages(prev =>
+      prev.map(m => m.id === updated.id ? { ...m, read_at: updated.read_at } : m)
+    );
   }, []);
 
-  useSupportMessages(id ?? null, handleNewMessage);
+  const handleTyping = useCallback((typingUserId: string) => {
+    if (typingUserId !== userId) {
+      setIsTyping(true);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => setIsTyping(false), 3000);
+    }
+  }, [userId]);
+
+  useSupportMessages(id ?? null, handleNewMessage, handleMessageUpdate, handleTyping);
+
+  // Broadcast typing (debounced)
+  const broadcastTyping = useCallback(() => {
+    if (!id || !userId) return;
+    const now = Date.now();
+    if (now - lastTypingBroadcast.current < 1000) return;
+    lastTypingBroadcast.current = now;
+
+    supabase.channel(`support-${id}`).send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { userId },
+    });
+  }, [id, userId]);
+
+  const handleTextChange = (value: string) => {
+    setText(value);
+    if (value.trim()) broadcastTyping();
+  };
 
   const sendMessage = async () => {
     if (!text.trim() || !userId || !id || sending) return;
@@ -75,18 +172,24 @@ export default function SupportChatScreen() {
 
     const messageText = text.trim();
     setText('');
+    setOptimisticTexts(prev => [...prev, messageText]);
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('support_messages')
         .insert({
           ticket_id: id,
           sender_id: userId,
           message: messageText,
         });
+      if (error) {
+        setText(messageText);
+        setOptimisticTexts([]);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       setText(messageText);
+      setOptimisticTexts([]);
     } finally {
       setSending(false);
     }
@@ -105,6 +208,13 @@ export default function SupportChatScreen() {
       </>
     );
   }
+
+  // Build display data: real messages + optimistic
+  const displayData = [
+    ...messages.map(m => ({ type: 'real' as const, data: m })),
+    ...optimisticTexts.map((t, i) => ({ type: 'optimistic' as const, data: { message: t, index: i } })),
+    ...(isTyping ? [{ type: 'typing' as const, data: null }] : []),
+  ];
 
   return (
     <>
@@ -135,8 +245,12 @@ export default function SupportChatScreen() {
           {/* Messages */}
           <FlatList
             ref={flatListRef}
-            data={messages}
-            keyExtractor={(item) => item.id}
+            data={displayData}
+            keyExtractor={(item, i) => {
+              if (item.type === 'real') return item.data.id;
+              if (item.type === 'optimistic') return `opt-${item.data.index}`;
+              return 'typing';
+            }}
             contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
             onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
             onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
@@ -147,7 +261,30 @@ export default function SupportChatScreen() {
               </View>
             }
             renderItem={({ item }) => {
-              const isOwn = item.sender_id === userId;
+              if (item.type === 'typing') {
+                return <TypingBubble />;
+              }
+
+              if (item.type === 'optimistic') {
+                // Optimistic message — sending
+                return (
+                  <View className="mb-3 max-w-[80%] self-end">
+                    <View className="px-4 py-2.5 rounded-2xl bg-papola-blue rounded-br-sm opacity-80">
+                      <Text className="text-sm text-white">{item.data.message}</Text>
+                    </View>
+                    <View className="flex-row items-center justify-end mt-0.5 mr-1">
+                      <Text className="text-[10px] text-gray-400 mr-0.5">
+                        {new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                      </Text>
+                      <SingleCheck />
+                    </View>
+                  </View>
+                );
+              }
+
+              // Real message
+              const msg = item.data;
+              const isOwn = msg.sender_id === userId;
               return (
                 <View className={`mb-3 max-w-[80%] ${isOwn ? 'self-end' : 'self-start'}`}>
                   {!isOwn && (
@@ -161,12 +298,15 @@ export default function SupportChatScreen() {
                     }`}
                   >
                     <Text className={`text-sm ${isOwn ? 'text-white' : 'text-gray-800'}`}>
-                      {item.message}
+                      {msg.message}
                     </Text>
                   </View>
-                  <Text className={`text-[10px] text-gray-400 mt-0.5 ${isOwn ? 'text-right mr-1' : 'ml-1'}`}>
-                    {new Date(item.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
+                  <View className={`flex-row items-center mt-0.5 ${isOwn ? 'justify-end mr-1' : 'ml-1'}`}>
+                    <Text className="text-[10px] text-gray-400 mr-0.5">
+                      {new Date(msg.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                    {isOwn && <MessageChecks readAt={msg.read_at} />}
+                  </View>
                 </View>
               );
             }}
@@ -183,7 +323,7 @@ export default function SupportChatScreen() {
                 className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 text-sm text-gray-900 max-h-24"
                 placeholder="Escribe un mensaje..."
                 value={text}
-                onChangeText={setText}
+                onChangeText={handleTextChange}
                 multiline
               />
               <TouchableOpacity

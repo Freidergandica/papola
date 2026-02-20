@@ -7,11 +7,14 @@ export interface SupportMessage {
   sender_id: string;
   message: string;
   created_at: string;
+  read_at: string | null;
 }
 
 export function useSupportMessages(
   ticketId: string | null,
   onNewMessage: (message: SupportMessage) => void,
+  onMessageUpdate?: (message: SupportMessage) => void,
+  onTyping?: (userId: string) => void,
 ) {
   useEffect(() => {
     if (!ticketId) return;
@@ -30,10 +33,27 @@ export function useSupportMessages(
           onNewMessage(payload.new as SupportMessage);
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'support_messages',
+          filter: `ticket_id=eq.${ticketId}`,
+        },
+        (payload) => {
+          onMessageUpdate?.(payload.new as SupportMessage);
+        },
+      )
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload?.userId) {
+          onTyping?.(payload.userId);
+        }
+      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [ticketId, onNewMessage]);
+  }, [ticketId, onNewMessage, onMessageUpdate, onTyping]);
 }
