@@ -36,7 +36,7 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
 
     const { error } = await admin
       .from('orders')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status })
       .eq('id', orderId)
 
     if (error) return { error: error.message }
