@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -131,7 +131,7 @@ export default function PaymentWaitingScreen() {
     <>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-        <View className="flex-1 px-6 justify-center">
+        <ScrollView className="flex-1 px-6" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
           {/* Status Icon */}
           <View className="items-center mb-8">
             {isSuccess ? (
@@ -168,10 +168,10 @@ export default function PaymentWaitingScreen() {
           {!isFinished && (
             <View className="bg-papola-blue/5 border border-papola-blue/20 rounded-2xl p-5 mb-4" style={shadowStyles.sm}>
               <Text className="text-xs font-bold text-papola-blue mb-3 uppercase">Enviar Pago Móvil a</Text>
-              <TouchableOpacity className="flex-row justify-between items-center mb-2" onPress={() => copyToClipboard('04121917614', 'phone')}>
+              <TouchableOpacity className="flex-row justify-between items-center mb-2" onPress={() => copyToClipboard('04242697770', 'phone')}>
                 <Text className="text-sm text-gray-500">Teléfono</Text>
                 <View className="flex-row items-center">
-                  <Text className="text-sm font-bold text-gray-900 mr-2">0412-1917614</Text>
+                  <Text className="text-sm font-bold text-gray-900 mr-2">0424-2697770</Text>
                   <Ionicons name={copiedField === 'phone' ? 'checkmark-circle' : 'copy-outline'} size={16} color={copiedField === 'phone' ? '#22c55e' : '#9ca3af'} />
                 </View>
               </TouchableOpacity>
@@ -193,6 +193,25 @@ export default function PaymentWaitingScreen() {
                   <Ionicons name={copiedField === 'amount' ? 'checkmark-circle' : 'copy-outline'} size={16} color={copiedField === 'amount' ? '#22c55e' : '#9ca3af'} />
                 </View>
               </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Instructions */}
+          {!isFinished && (
+            <View className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4">
+              <Text className="text-xs font-bold text-yellow-700 mb-2 uppercase">Instrucciones de pago</Text>
+              <View className="flex-row mb-1.5">
+                <Text className="text-yellow-600 text-xs font-bold mr-1.5">1.</Text>
+                <Text className="text-xs text-yellow-800 flex-1">Ingresa tu cédula de identidad al realizar la transacción, de esta forma detectaremos tu pago en nuestra cuenta.</Text>
+              </View>
+              <View className="flex-row mb-1.5">
+                <Text className="text-yellow-600 text-xs font-bold mr-1.5">2.</Text>
+                <Text className="text-xs text-yellow-800 flex-1">Tu pago se verificará automáticamente. Asegúrate que los datos coincidan exactamente.</Text>
+              </View>
+              <View className="flex-row">
+                <Text className="text-yellow-600 text-xs font-bold mr-1.5">3.</Text>
+                <Text className="text-xs text-yellow-800 flex-1">El monto a transferir debe ser igual o mayor a <Text className="font-bold">Bs. {params.amountVes}</Text>.</Text>
+              </View>
             </View>
           )}
 
@@ -291,7 +310,7 @@ export default function PaymentWaitingScreen() {
               </Text>
             </TouchableOpacity>
           )}
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </>
   );

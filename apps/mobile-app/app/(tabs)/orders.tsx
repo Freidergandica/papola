@@ -47,9 +47,10 @@ export default function OrdersScreen() {
         .eq('customer_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (!error) {
-        setOrders(data || []);
+      if (error) {
+        console.error('Orders query error:', error);
       }
+      setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {

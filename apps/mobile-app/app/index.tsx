@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, Image, Animated as RNAnimated } from 'react-native';
-import { router } from 'expo-router';
+import { router, Redirect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
@@ -33,18 +33,19 @@ export default function LoginScreen() {
 
   // Check if onboarding has been completed
   const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
       const onboarded = await AsyncStorage.getItem('@papola/onboarding_completed');
       if (!onboarded) {
-        setTimeout(() => router.replace('/onboarding'), 0);
+        setRedirectTo('/onboarding');
         return;
       }
       // If user already has a valid session, skip login
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setTimeout(() => router.replace('/(tabs)/home'), 0);
+        setRedirectTo('/(tabs)/home');
         return;
       }
       setOnboardingChecked(true);
@@ -187,6 +188,10 @@ export default function LoginScreen() {
       Alert.alert('Error', error.message);
     }
   };
+
+  if (redirectTo) {
+    return <Redirect href={redirectTo as any} />;
+  }
 
   if (!onboardingChecked) {
     return <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />;
