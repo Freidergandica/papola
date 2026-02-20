@@ -11,7 +11,7 @@ export default function StoreLayout({
       <StoreSidebar />
       <StoreNotificationWrapper />
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
           {children}
         </main>
       </div>
