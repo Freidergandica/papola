@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, ShoppingBag, Store, LogOut, Package, Tag, MessageCircle, MoreHorizontal, X } from 'lucide-react'
@@ -35,11 +35,54 @@ function MobileBadge({ count }: { count: number }) {
   )
 }
 
-export default function StoreSidebar({ badges = {} }: { badges?: Record<string, number> }) {
+interface StoreSidebarProps {
+  badges?: Record<string, number>
+  storeId?: string
+  userId?: string
+}
+
+export default function StoreSidebar({ badges = {}, storeId, userId }: StoreSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [liveBadges, setLiveBadges] = useState(badges)
+
+  // Sync with server props on navigation
+  useEffect(() => {
+    setLiveBadges(badges)
+  }, [badges])
+
+  // Re-fetch counts from client
+  const refreshCounts = useCallback(async () => {
+    if (!storeId || !userId) return
+
+    const [ordersResult, supportResult] = await Promise.all([
+      supabase.from('orders').select('id', { count: 'exact', head: true })
+        .eq('store_id', storeId)
+        .in('status', ['pending', 'paid', 'accepted', 'preparing', 'ready_for_pickup', 'ready_for_delivery', 'out_for_delivery']),
+      supabase.from('support_tickets').select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .in('status', ['open', 'in_progress']),
+    ])
+
+    const updated: Record<string, number> = {}
+    if (ordersResult.count) updated['/store/orders'] = ordersResult.count
+    if (supportResult.count) updated['/store/support'] = supportResult.count
+    setLiveBadges(updated)
+  }, [storeId, userId, supabase])
+
+  // Subscribe to Realtime changes
+  useEffect(() => {
+    if (!storeId || !userId) return
+
+    const channel = supabase.channel('store-badges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `store_id=eq.${storeId}` }, refreshCounts)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets', filter: `user_id=eq.${userId}` }, refreshCounts)
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [storeId, userId, supabase, refreshCounts])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -50,7 +93,7 @@ export default function StoreSidebar({ badges = {} }: { badges?: Record<string, 
   const mobileMore = navigation.filter(item => !item.mobileMain)
   const hasMore = mobileMore.length > 0
   const moreHasActive = mobileMore.some(item => pathname.startsWith(item.href))
-  const moreBadgeTotal = mobileMore.reduce((sum, item) => sum + (badges[item.href] || 0), 0)
+  const moreBadgeTotal = mobileMore.reduce((sum, item) => sum + (liveBadges[item.href] || 0), 0)
 
   return (
     <>
@@ -91,7 +134,7 @@ export default function StoreSidebar({ badges = {} }: { badges?: Record<string, 
                       aria-hidden="true"
                     />
                     {item.name}
-                    {badges[item.href] ? <BadgeCount count={badges[item.href]} /> : null}
+                    {liveBadges[item.href] ? <BadgeCount count={liveBadges[item.href]} /> : null}
                   </Link>
                 )
               })}
@@ -143,15 +186,14 @@ export default function StoreSidebar({ badges = {} }: { badges?: Record<string, 
                   >
                     <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
                     {item.name}
-                    {badges[item.href] ? (
+                    {liveBadges[item.href] ? (
                       <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
-                        {badges[item.href] > 20 ? '+20' : badges[item.href]}
+                        {liveBadges[item.href] > 20 ? '+20' : liveBadges[item.href]}
                       </span>
                     ) : null}
                   </Link>
                 )
               })}
-              {/* Cerrar sesión en el menú "Más" */}
               <button
                 onClick={() => { setMoreOpen(false); handleSignOut() }}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
@@ -180,7 +222,7 @@ export default function StoreSidebar({ badges = {} }: { badges?: Record<string, 
               >
                 <div className="relative">
                   <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
-                  {badges[item.href] ? <MobileBadge count={badges[item.href]} /> : null}
+                  {liveBadges[item.href] ? <MobileBadge count={liveBadges[item.href]} /> : null}
                 </div>
                 {item.name}
               </Link>

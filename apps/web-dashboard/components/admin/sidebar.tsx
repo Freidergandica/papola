@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Store, Users, Settings, Tag, ShoppingBag, Landmark, MessageCircle, MoreHorizontal, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
 
 const allNavigation = [
   { name: 'Panel', href: '/admin/dashboard', icon: LayoutDashboard, roles: ['admin', 'sales_manager'], mobileMain: true },
@@ -37,7 +38,28 @@ function MobileBadge({ count }: { count: number }) {
 
 export default function Sidebar({ role = 'admin', badges = {} }: { role?: string; badges?: Record<string, number> }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [liveBadges, setLiveBadges] = useState(badges)
+
+  // Sync with server props on navigation
+  useEffect(() => {
+    setLiveBadges(badges)
+  }, [badges])
+
+  // Subscribe to Realtime changes — re-fetch counts via server refresh
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase.channel('admin-badges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bank_account_changes' }, () => router.refresh())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [router])
+
   const navigation = allNavigation.filter(item => item.roles.includes(role))
 
   // Mobile: split into main tabs (max 4) + overflow
@@ -46,7 +68,7 @@ export default function Sidebar({ role = 'admin', badges = {} }: { role?: string
   const hasMore = mobileMore.length > 0
 
   // Check if any "more" item has a badge
-  const moreBadgeTotal = mobileMore.reduce((sum, item) => sum + (badges[item.href] || 0), 0)
+  const moreBadgeTotal = mobileMore.reduce((sum, item) => sum + (liveBadges[item.href] || 0), 0)
   // Check if any "more" item is active
   const moreHasActive = mobileMore.some(item => pathname.startsWith(item.href))
 
@@ -95,7 +117,7 @@ export default function Sidebar({ role = 'admin', badges = {} }: { role?: string
                         aria-hidden="true"
                       />
                       {item.name}
-                      {badges[item.href] ? <BadgeCount count={badges[item.href]} /> : null}
+                      {liveBadges[item.href] ? <BadgeCount count={liveBadges[item.href]} /> : null}
                     </Link>
                   )
                 })}
@@ -133,9 +155,9 @@ export default function Sidebar({ role = 'admin', badges = {} }: { role?: string
                   >
                     <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
                     {item.name}
-                    {badges[item.href] ? (
+                    {liveBadges[item.href] ? (
                       <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold text-white bg-red-500 rounded-full">
-                        {badges[item.href] > 20 ? '+20' : badges[item.href]}
+                        {liveBadges[item.href] > 20 ? '+20' : liveBadges[item.href]}
                       </span>
                     ) : null}
                   </Link>
@@ -162,7 +184,7 @@ export default function Sidebar({ role = 'admin', badges = {} }: { role?: string
               >
                 <div className="relative">
                   <item.icon className={cn('h-5 w-5', isActive ? 'text-papola-blue' : 'text-gray-400')} />
-                  {badges[item.href] ? <MobileBadge count={badges[item.href]} /> : null}
+                  {liveBadges[item.href] ? <MobileBadge count={liveBadges[item.href]} /> : null}
                 </div>
                 {item.name}
               </Link>

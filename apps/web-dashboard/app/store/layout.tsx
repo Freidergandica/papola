@@ -38,7 +38,7 @@ export default async function StoreLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <StoreSidebar badges={badges} />
+      <StoreSidebar badges={badges} storeId={store?.id} userId={user.id} />
       <StoreNotificationWrapper />
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
