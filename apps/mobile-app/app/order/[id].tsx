@@ -51,9 +51,9 @@ const preAcceptanceConfig: Record<string, { label: string; color: string; icon: 
 };
 
 const paymentLabels: Record<string, string> = {
-  pago_movil: 'Pago Movil',
+  pago_movil: 'Pago Móvil',
   cash: 'Efectivo',
-  c2p: 'C2P',
+  c2p: 'Pago con Tarjeta',
 };
 
 function getStepState(stepStatus: string, currentStatus: string) {

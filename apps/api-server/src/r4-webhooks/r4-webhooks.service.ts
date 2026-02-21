@@ -189,56 +189,35 @@ export class R4WebhooksService {
 
       // 2. Calcular comisión y ganancia (igual que legacy: CONF_APP.fee / 100 * amount)
       const numAmount = Number(amount);
-      let fee = FEE_PERCENTAGE / 100 * numAmount;
-      fee = Number(fee.toFixed(2));
-      const profit = numAmount - fee;
+      const fee = Number((FEE_PERCENTAGE / 100 * numAmount).toFixed(2));
+      const profit = Number((numAmount - fee).toFixed(2));
 
       this.logger.log(`[R4 Notification Hook] Calculating balances: amount=${numAmount}, fee=${fee}, profit=${profit} (${FEE_PERCENTAGE}%)`);
 
-      // 3. Actualizar balance de la tienda (igual que legacy: store.balance + profit)
-      const { data: store } = await supabase
-        .from('stores')
-        .select('balance')
-        .eq('id', order.store_id)
-        .single();
+      // 3. Actualizar balance de la tienda de forma atómica
+      this.logger.log(`[R4 Notification Hook] Incrementing store balance by ${profit}`);
 
-      const currentBalance = Number(store?.balance) || 0;
-      const finalBalance = currentBalance + profit;
+      const { error: balErr1 } = await supabase.rpc('increment_store_balance', {
+        p_store_id: order.store_id,
+        p_amount: profit,
+      });
+      if (balErr1) this.logger.error(`[R4 Notification Hook] Failed to increment store balance: ${balErr1.message}`);
 
-      this.logger.log(`[R4 Notification Hook] Store balance: current=${currentBalance}, final=${finalBalance}`);
+      // 4. Actualizar platform balances de forma atómica
+      const { error: balErr2 } = await supabase.rpc('increment_platform_balance', {
+        p_key: 'available_balance',
+        p_amount: fee,
+      });
+      if (balErr2) this.logger.error(`[R4 Notification Hook] Failed to increment available_balance: ${balErr2.message}`);
 
-      await supabase
-        .from('stores')
-        .update({ balance: finalBalance })
-        .eq('id', order.store_id);
-
-      // 4. Actualizar platform balances (igual que legacy: available_balance += fee, accounting_balance += profit)
-      // TODO: el availableBalance ira creciendo siempre y el accountingBalance disminuira cuando se haga la dispersion
-      // la disminucion de saldos se hara solo en un cron job y despues de tener respuesta del servidor ftp
-      const { data: platformBalances } = await supabase
-        .from('platform_balances')
-        .select('key, value')
-        .in('key', ['available_balance', 'accounting_balance']);
-
-      if (platformBalances) {
-        for (const row of platformBalances) {
-          const currentValue = Number(row.value) || 0;
-          if (row.key === 'available_balance') {
-            await supabase
-              .from('platform_balances')
-              .update({ value: (currentValue + fee).toString(), updated_at: new Date().toISOString() })
-              .eq('key', row.key);
-          } else if (row.key === 'accounting_balance') {
-            await supabase
-              .from('platform_balances')
-              .update({ value: (currentValue + profit).toString(), updated_at: new Date().toISOString() })
-              .eq('key', row.key);
-          }
-        }
-      }
+      const { error: balErr3 } = await supabase.rpc('increment_platform_balance', {
+        p_key: 'accounting_balance',
+        p_amount: profit,
+      });
+      if (balErr3) this.logger.error(`[R4 Notification Hook] Failed to increment accounting_balance: ${balErr3.message}`);
 
       // 5. Registrar transacción (audit trail — no existía en legacy pero lo mantenemos)
-      await supabase.from('payment_transactions').insert({
+      const { error: txErr } = await supabase.from('payment_transactions').insert({
         order_id: order.id,
         store_id: order.store_id,
         gross_amount: numAmount,
@@ -246,6 +225,7 @@ export class R4WebhooksService {
         fee_amount: fee,
         net_amount: profit,
       });
+      if (txErr) this.logger.error(`[R4 Notification Hook] Failed to insert payment_transaction: ${txErr.message}`);
 
       this.logger.log(`[R4 Notification Hook] Payment updated successfully: mobilePaymentRef=${data.Referencia}, phone=${data.TelefonoEmisor}`);
     } catch (error: any) {

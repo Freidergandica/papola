@@ -27,6 +27,35 @@ export class PaymentsController {
     return this.paymentsService.initializePayment(body);
   }
 
+  @Post('c2p/generate-otp')
+  generateC2pOtp(
+    @Body()
+    body: {
+      order_id: string;
+      phone: string;
+      cedula: string;
+      banco: string;
+      monto: string;
+    },
+  ) {
+    return this.paymentsService.generateC2pOtp(body);
+  }
+
+  @Post('c2p/charge')
+  chargeC2p(
+    @Body()
+    body: {
+      order_id: string;
+      phone: string;
+      cedula: string;
+      banco: string;
+      monto: string;
+      otp: string;
+    },
+  ) {
+    return this.paymentsService.chargeC2p(body);
+  }
+
   @Sse('sse/:orderId')
   paymentStream(@Param('orderId') orderId: string, @Req() req: any) {
     req.on('close', () => {

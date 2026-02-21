@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Store, Users, Settings, Tag, ShoppingBag, Landmark, MessageCircle, MoreHorizontal, X } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, Tag, ShoppingBag, Landmark, MessageCircle, MoreHorizontal, X, Banknote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +15,7 @@ const allNavigation = [
   { name: 'Pedidos', href: '/admin/orders', icon: ShoppingBag, roles: ['admin', 'sales_manager'], mobileMain: true },
   { name: 'Usuarios', href: '/admin/users', icon: Users, roles: ['admin'], mobileMain: false },
   { name: 'Cuentas', href: '/admin/bank-changes', icon: Landmark, roles: ['admin'], mobileMain: false },
+  { name: 'Dispersión', href: '/admin/dispersals', icon: Banknote, roles: ['admin'], mobileMain: false },
   { name: 'Soporte', href: '/admin/support', icon: MessageCircle, roles: ['admin'], mobileMain: true },
   { name: 'Config', href: '/admin/settings', icon: Settings, roles: ['admin'], mobileMain: false },
 ]

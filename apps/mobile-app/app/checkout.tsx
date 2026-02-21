@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform, Modal, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { apiGet, apiPost } from '../lib/api';
 import { shadowStyles } from '../styles/shadows';
 import { AddressPicker } from '../components/AddressPicker';
+import { VENEZUELAN_BANKS } from '../lib/banks';
 
 type PaymentMethod = 'pago_movil' | 'c2p';
 
@@ -23,6 +24,9 @@ export default function CheckoutScreen() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pago_movil');
   const [cedula, setCedula] = useState('');
+  const [phone, setPhone] = useState('');
+  const [selectedBank, setSelectedBank] = useState<{ code: string; name: string } | null>(null);
+  const [showBankPicker, setShowBankPicker] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number>(36.5);
   const [submitting, setSubmitting] = useState(false);
 
@@ -103,10 +107,26 @@ export default function CheckoutScreen() {
       return;
     }
 
+    const trimmedCedula = cedula.trim();
+
     if (paymentMethod === 'pago_movil') {
-      const trimmed = cedula.trim();
-      if (!/^\d{6,10}$/.test(trimmed)) {
+      if (!/^\d{6,10}$/.test(trimmedCedula)) {
         Alert.alert('Cédula requerida', 'Ingresa tu cédula (6-10 dígitos) para que el banco pueda verificar tu pago.');
+        return;
+      }
+    }
+
+    if (paymentMethod === 'c2p') {
+      if (!/^\d{6,10}$/.test(trimmedCedula)) {
+        Alert.alert('Cédula requerida', 'Ingresa tu cédula (6-10 dígitos).');
+        return;
+      }
+      if (!/^04\d{9}$/.test(phone.trim())) {
+        Alert.alert('Teléfono requerido', 'Ingresa tu número de teléfono (11 dígitos, ej: 04121234567).');
+        return;
+      }
+      if (!selectedBank) {
+        Alert.alert('Banco requerido', 'Selecciona tu banco.');
         return;
       }
     }
@@ -127,23 +147,24 @@ export default function CheckoutScreen() {
         unit_price: item.price,
       }));
 
-      if (paymentMethod === 'pago_movil') {
-        // Use API server for pago_movil — handles pending_payment status + expiration timer
-        const order = await apiPost<{ id: string }>('/orders', {
-          customer_id: user.id,
-          store_id: items[0]?.store_id,
-          delivery_address: address,
-          delivery_latitude: deliveryCoords?.latitude ?? null,
-          delivery_longitude: deliveryCoords?.longitude ?? null,
-          payment_method: paymentMethod,
-          payment_currency: 'USD',
-          exchange_rate: exchangeRate,
-          deal_id: appliedDeal?.id || null,
-          payment_id_card: cedula.trim(),
-          items: orderItems,
-        });
+      // Ambos métodos crean la orden via API server (pending_payment + expiración)
+      const order = await apiPost<{ id: string }>('/orders', {
+        customer_id: user.id,
+        store_id: items[0]?.store_id,
+        delivery_address: address,
+        delivery_latitude: deliveryCoords?.latitude ?? null,
+        delivery_longitude: deliveryCoords?.longitude ?? null,
+        payment_method: paymentMethod,
+        payment_currency: 'USD',
+        exchange_rate: exchangeRate,
+        deal_id: appliedDeal?.id || null,
+        payment_id_card: trimmedCedula,
+        items: orderItems,
+      });
 
-        clearCart();
+      clearCart();
+
+      if (paymentMethod === 'pago_movil') {
         try { router.dismissAll(); } catch {}
         router.replace({
           pathname: '/payment-waiting',
@@ -151,51 +172,28 @@ export default function CheckoutScreen() {
             orderId: order.id,
             customerId: user.id,
             amountVes: totalVES.toFixed(2),
-            cedula: cedula.trim(),
+            cedula: trimmedCedula,
             totalUsd: finalTotal.toFixed(2),
             exchangeRate: String(exchangeRate),
           },
         });
       } else {
-        // Cash / C2P — insert directly to Supabase (existing flow)
-        const { data: order, error } = await supabase
-          .from('orders')
-          .insert({
-            customer_id: user.id,
-            store_id: items[0]?.store_id,
-            delivery_address: address,
-            delivery_latitude: deliveryCoords?.latitude ?? null,
-            delivery_longitude: deliveryCoords?.longitude ?? null,
-            payment_method: paymentMethod,
-            payment_currency: 'USD',
-            exchange_rate: exchangeRate,
-            amount_in_ves: totalVES,
-            deal_id: appliedDeal?.id || null,
-            discount_amount: discountAmount,
-            total_amount: finalTotal,
-            status: 'pending',
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        const itemsToInsert = orderItems.map(item => ({
-          order_id: order.id,
-          ...item,
-        }));
-
-        await supabase.from('order_items').insert(itemsToInsert);
-
-        clearCart();
-        Alert.alert(
-          'Pedido realizado',
-          'Tu pedido ha sido creado exitosamente. Recibirás actualizaciones sobre su estado.',
-          [{ text: 'Ver mis pedidos', onPress: () => {
-            try { router.dismissAll(); } catch {}
-            router.replace('/(tabs)/orders');
-          } }],
-        );
+        // C2P — navegar a pantalla de OTP
+        try { router.dismissAll(); } catch {}
+        router.replace({
+          pathname: '/payment-otp',
+          params: {
+            orderId: order.id,
+            customerId: user.id,
+            phone: phone.trim(),
+            cedula: `V${trimmedCedula}`,
+            banco: selectedBank!.code,
+            bancoName: selectedBank!.name,
+            monto: totalVES.toFixed(2),
+            totalUsd: finalTotal.toFixed(2),
+            exchangeRate: String(exchangeRate),
+          },
+        });
       }
     } catch (error) {
       console.error('Order error:', error);
@@ -207,7 +205,7 @@ export default function CheckoutScreen() {
 
   const paymentMethods: { key: PaymentMethod; label: string; icon: string }[] = [
     { key: 'pago_movil', label: 'Pago Móvil', icon: 'phone-portrait-outline' },
-    { key: 'c2p', label: 'C2P', icon: 'card-outline' },
+    { key: 'c2p', label: 'Pago con Tarjeta', icon: 'card-outline' },
   ];
 
   return (
@@ -313,9 +311,9 @@ export default function CheckoutScreen() {
               ))}
             </View>
 
-            {/* Cedula for Pago Movil */}
-            {paymentMethod === 'pago_movil' && (
-              <View className="mb-6">
+            {/* Cedula (both methods) */}
+            {(paymentMethod === 'pago_movil' || paymentMethod === 'c2p') && (
+              <View className="mb-4">
                 <Text className="text-sm font-bold text-gray-900 mb-2">Cédula del pagador</Text>
                 <TextInput
                   className="border border-gray-300 rounded-xl px-4 py-3 text-sm"
@@ -326,9 +324,44 @@ export default function CheckoutScreen() {
                   maxLength={10}
                 />
                 <Text className="text-[10px] text-gray-400 mt-1">
-                  Requerida para que el banco verifique tu Pago Móvil
+                  {paymentMethod === 'pago_movil'
+                    ? 'Requerida para que el banco verifique tu Pago Móvil'
+                    : 'Cédula asociada a tu cuenta bancaria'}
                 </Text>
               </View>
+            )}
+
+            {/* C2P extra fields: phone + bank */}
+            {paymentMethod === 'c2p' && (
+              <>
+                <View className="mb-4">
+                  <Text className="text-sm font-bold text-gray-900 mb-2">Teléfono</Text>
+                  <TextInput
+                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm"
+                    placeholder="Ej: 04121234567"
+                    value={phone}
+                    onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, '').slice(0, 11))}
+                    keyboardType="phone-pad"
+                    maxLength={11}
+                  />
+                  <Text className="text-[10px] text-gray-400 mt-1">
+                    Teléfono asociado a tu cuenta bancaria
+                  </Text>
+                </View>
+
+                <View className="mb-6">
+                  <Text className="text-sm font-bold text-gray-900 mb-2">Banco</Text>
+                  <TouchableOpacity
+                    className="border border-gray-300 rounded-xl px-4 py-3 flex-row justify-between items-center"
+                    onPress={() => setShowBankPicker(true)}
+                  >
+                    <Text className={`text-sm ${selectedBank ? 'text-gray-900' : 'text-gray-400'}`}>
+                      {selectedBank ? `${selectedBank.name} (${selectedBank.code})` : 'Selecciona tu banco'}
+                    </Text>
+                    <Ionicons name="chevron-down" size={18} color="#9ca3af" />
+                  </TouchableOpacity>
+                </View>
+              </>
             )}
 
             {/* Price Display */}
@@ -379,6 +412,41 @@ export default function CheckoutScreen() {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
+
+        {/* Bank Picker Modal */}
+        <Modal visible={showBankPicker} animationType="slide" transparent>
+          <View className="flex-1 bg-black/50 justify-end">
+            <View className="bg-white rounded-t-3xl max-h-[70%]">
+              <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-100">
+                <Text className="text-lg font-bold text-gray-900">Selecciona tu banco</Text>
+                <TouchableOpacity onPress={() => setShowBankPicker(false)}>
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={VENEZUELAN_BANKS}
+                keyExtractor={(item) => item.code}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    className={`flex-row items-center px-5 py-4 border-b border-gray-50 ${
+                      selectedBank?.code === item.code ? 'bg-papola-blue-20' : ''
+                    }`}
+                    onPress={() => {
+                      setSelectedBank({ code: item.code, name: item.name });
+                      setShowBankPicker(false);
+                    }}
+                  >
+                    <Text className="text-sm text-gray-500 w-12">{item.code}</Text>
+                    <Text className="text-sm text-gray-900 flex-1">{item.name}</Text>
+                    {selectedBank?.code === item.code && (
+                      <Ionicons name="checkmark-circle" size={20} color="#1F29DE" />
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </>
   );

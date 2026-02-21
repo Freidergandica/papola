@@ -81,9 +81,9 @@ export class R4Client {
   }
 
   // ── Cobro C2P ──────────────────────────────────────────────────────
-  // POST /MBc2p — HMAC: TelefonoDestino + Monto + Banco + Cedula
+  // POST /MBc2p — HMAC: " TelefonoDestino + Monto + Banco + Cedula" (leading space per PDF)
   async cobrarC2p(data: C2pRequest): Promise<C2pResponse> {
-    const hmac = data.TelefonoDestino + data.Monto + data.Banco + data.Cedula;
+    const hmac = ' ' + data.TelefonoDestino + data.Monto + data.Banco + data.Cedula;
     return this.request<C2pResponse>('/MBc2p', data, hmac);
   }
 

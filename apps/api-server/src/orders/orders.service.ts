@@ -77,9 +77,9 @@ export class OrdersService {
       ? Math.round(totalAmount * order.exchange_rate * 100) / 100
       : undefined;
 
-    // Determine initial status: pago_movil orders start as pending_payment
-    const isPagoMovil = order.payment_method === 'pago_movil';
-    const initialStatus = isPagoMovil ? 'pending_payment' : 'pending';
+    // Determine initial status: pago_movil and c2p orders start as pending_payment
+    const needsPayment = order.payment_method === 'pago_movil' || order.payment_method === 'c2p';
+    const initialStatus = needsPayment ? 'pending_payment' : 'pending';
 
     // Create order
     const { data: createdOrder, error: orderError } = await this.supabase
@@ -99,7 +99,7 @@ export class OrdersService {
         discount_amount: discountAmount,
         total_amount: totalAmount,
         status: initialStatus,
-        ...(isPagoMovil && order.payment_id_card
+        ...(needsPayment && order.payment_id_card
           ? { payment_id_card: order.payment_id_card }
           : {}),
       })
@@ -151,10 +151,10 @@ export class OrdersService {
       }
     }
 
-    // Schedule expiration for pago_movil orders (5 min timeout)
-    if (isPagoMovil) {
+    // Schedule expiration for payment orders (5 min timeout)
+    if (needsPayment) {
       await this.orderExpirationService.scheduleExpiration(createdOrder.id);
-      this.logger.log(`Order ${createdOrder.id} created as pending_payment with 5min expiration`);
+      this.logger.log(`Order ${createdOrder.id} created as pending_payment (${order.payment_method}) with 5min expiration`);
     }
 
     return { ...createdOrder, items: orderItems };

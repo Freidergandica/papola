@@ -3,6 +3,23 @@ import { ConfigService } from '@nestjs/config';
 import { R4Client } from '@papola/r4-sdk';
 import { SupabaseService } from '../supabase/supabase.service';
 import { OrderExpirationService } from '../r4-webhooks/order-expiration.service';
+import { PushNotificationService } from '../notifications/push-notification.service';
+
+const FEE_PERCENTAGE = 6.8;
+
+/** Mapeo de códigos R4 a mensajes amigables en español */
+const C2P_ERROR_MESSAGES: Record<string, string> = {
+  '08': 'Token inválido. Intenta de nuevo.',
+  '15': 'Error de autenticación.',
+  '30': 'Datos incorrectos. Verifica tu información.',
+  '41': 'Tu banco no está disponible. Intenta más tarde.',
+  '51': 'Fondos insuficientes.',
+  '55': 'El teléfono no está registrado.',
+  '56': 'El teléfono no coincide con tu cuenta bancaria.',
+  '80': 'Cédula incorrecta.',
+  '87': 'Tiempo de espera agotado. Intenta de nuevo.',
+  '91': 'Tu banco no está disponible. Intenta más tarde.',
+};
 
 @Injectable()
 export class PaymentsService {
@@ -13,6 +30,7 @@ export class PaymentsService {
     private supabase: SupabaseService,
     private configService: ConfigService,
     private orderExpirationService: OrderExpirationService,
+    private pushNotificationService: PushNotificationService,
   ) {
     this.r4Client = new R4Client({
       commerce: this.configService.get<string>('R4_COMMERCE_TOKEN', ''),
@@ -160,5 +178,197 @@ export class PaymentsService {
       default:
         return '';
     }
+  }
+
+  // ── C2P ("Pago con Tarjeta") ────────────────────────────────────────
+
+  /**
+   * Paso 1: Generar OTP — R4 envía SMS al teléfono del cliente.
+   */
+  async generateC2pOtp(data: {
+    order_id: string;
+    phone: string;
+    cedula: string;
+    banco: string;
+    monto: string;
+  }) {
+    this.logger.log(`[C2P OTP] Generating OTP for order ${data.order_id}: phone=${data.phone}, banco=${data.banco}`);
+
+    try {
+      const response = await this.r4Client.generarOtp({
+        Banco: data.banco,
+        Monto: data.monto,
+        Telefono: data.phone,
+        Cedula: data.cedula,
+      });
+
+      this.logger.log(`[C2P OTP] Response: ${JSON.stringify(response)}`);
+
+      if (response.success || response.code === '202') {
+        return { success: true, message: 'OTP enviado a tu teléfono' };
+      }
+
+      return {
+        success: false,
+        code: response.code,
+        message: C2P_ERROR_MESSAGES[response.code] || response.message || 'Error al generar OTP',
+      };
+    } catch (error: any) {
+      this.logger.error(`[C2P OTP] Error: ${error?.message}`);
+      return {
+        success: false,
+        code: 'ERROR',
+        message: 'No se pudo enviar el código. Intenta de nuevo.',
+      };
+    }
+  }
+
+  /**
+   * Paso 2: Cobrar C2P — Cobra de la cuenta del cliente usando su OTP.
+   * Respuesta inmediata (no hay webhooks).
+   */
+  async chargeC2p(data: {
+    order_id: string;
+    phone: string;
+    cedula: string;
+    banco: string;
+    monto: string;
+    otp: string;
+  }) {
+    this.logger.log(`[C2P Charge] Processing charge for order ${data.order_id}`);
+
+    const supabase = this.supabase.getClient();
+
+    // Verificar que la orden existe y está en pending_payment
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('id, store_id, total_amount, amount_in_ves, status')
+      .eq('id', data.order_id)
+      .single();
+
+    if (orderError || !order) {
+      throw new BadRequestException('Orden no encontrada');
+    }
+
+    if (order.status !== 'pending_payment') {
+      throw new BadRequestException('Esta orden no está pendiente de pago');
+    }
+
+    // Verificar que el monto coincide con la orden
+    const expectedAmount = Number(order.amount_in_ves);
+    const clientAmount = parseFloat(data.monto);
+    if (expectedAmount > 0 && Math.abs(expectedAmount - clientAmount) > 0.01) {
+      this.logger.warn(`[C2P Charge] Amount mismatch: order=${expectedAmount}, client=${clientAmount}`);
+      throw new BadRequestException('El monto no coincide con la orden');
+    }
+
+    // Paso 1: Llamar a R4 para cobrar (esto SÍ puede fallar y retornar error al usuario)
+    let response: any;
+    try {
+      response = await this.r4Client.cobrarC2p({
+        TelefonoDestino: data.phone,
+        Cedula: data.cedula,
+        Banco: data.banco,
+        Monto: data.monto,
+        Otp: data.otp,
+        Concepto: 'Compra Papola',
+      });
+
+      this.logger.log(`[C2P Charge] R4 response: ${JSON.stringify(response)}`);
+    } catch (error: any) {
+      this.logger.error(`[C2P Charge] R4 call error: ${error?.message}`);
+      return {
+        success: false,
+        code: 'ERROR',
+        message: 'Error al procesar el pago. Intenta de nuevo.',
+      };
+    }
+
+    if (response.code !== '00') {
+      return {
+        success: false,
+        code: response.code,
+        message: C2P_ERROR_MESSAGES[response.code] || response.message || 'Error al procesar el pago',
+      };
+    }
+
+    // Paso 2: R4 cobró exitosamente — desde aquí NUNCA retornar error al usuario
+    // (si algo falla en DB, el usuario ya fue cobrado y mostrar error causaría reintento = doble cobro)
+    try {
+      this.orderExpirationService.cancelExpiration(data.order_id);
+
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          status: 'accepted',
+          payment_phone: data.phone,
+          payment_bank: data.banco,
+          payment_reference: response.reference,
+          payment_id_card: data.cedula.replace(/^[VJEG]/i, ''),
+          payment_datetime: new Date().toISOString(),
+        })
+        .eq('id', data.order_id);
+
+      if (updateError) {
+        this.logger.error(`[C2P Charge] CRITICAL: DB update failed after R4 charge. Order: ${data.order_id}, Ref: ${response.reference}, Error: ${updateError.message}`);
+      }
+
+      // Calcular fees y actualizar balances
+      const numAmount = parseFloat(data.monto);
+      const fee = Number((FEE_PERCENTAGE / 100 * numAmount).toFixed(2));
+      const profit = Number((numAmount - fee).toFixed(2));
+
+      this.logger.log(`[C2P Charge] Balances: amount=${numAmount}, fee=${fee}, profit=${profit}`);
+
+      const { error: balErr1 } = await supabase.rpc('increment_store_balance', {
+        p_store_id: order.store_id,
+        p_amount: profit,
+      });
+      if (balErr1) this.logger.error(`[C2P Charge] Failed to increment store balance: ${balErr1.message}`);
+
+      const { error: balErr2 } = await supabase.rpc('increment_platform_balance', {
+        p_key: 'available_balance',
+        p_amount: fee,
+      });
+      if (balErr2) this.logger.error(`[C2P Charge] Failed to increment available_balance: ${balErr2.message}`);
+
+      const { error: balErr3 } = await supabase.rpc('increment_platform_balance', {
+        p_key: 'accounting_balance',
+        p_amount: profit,
+      });
+      if (balErr3) this.logger.error(`[C2P Charge] Failed to increment accounting_balance: ${balErr3.message}`);
+
+      const { error: txErr } = await supabase.from('payment_transactions').insert({
+        order_id: data.order_id,
+        store_id: order.store_id,
+        gross_amount: numAmount,
+        fee_percentage: FEE_PERCENTAGE,
+        fee_amount: fee,
+        net_amount: profit,
+      });
+      if (txErr) this.logger.error(`[C2P Charge] Failed to insert payment_transaction: ${txErr.message}`);
+
+      try {
+        await this.pushNotificationService.sendToStoreOwner(
+          order.store_id,
+          'Nuevo pago recibido',
+          `Se ha confirmado un pago de Bs. ${numAmount.toFixed(2)} en tu tienda`,
+          { orderId: data.order_id, event: 'payment.accepted' },
+        );
+      } catch (pushError: any) {
+        this.logger.warn(`[C2P Charge] Push notification failed: ${pushError?.message}`);
+      }
+    } catch (postChargeError: any) {
+      // R4 ya cobró — loguear pero SIEMPRE retornar success al usuario
+      this.logger.error(`[C2P Charge] CRITICAL: Post-charge error (R4 already charged). Order: ${data.order_id}, Ref: ${response.reference}, Error: ${postChargeError?.message}`);
+    }
+
+    this.logger.log(`[C2P Charge] Payment successful: order=${data.order_id}, reference=${response.reference}`);
+
+    return {
+      success: true,
+      reference: response.reference,
+      message: 'Pago procesado exitosamente',
+    };
   }
 }
